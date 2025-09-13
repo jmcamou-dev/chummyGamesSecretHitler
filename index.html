@@ -265,7 +265,7 @@
             
             // Title
             const title = document.createElement('h1');
-            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.0';
+            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.1';
             Object.assign(title.style, {
                 color: '#333',
                 marginBottom: '20px'
@@ -2130,16 +2130,16 @@
                         return;
                     }
                     // Check if President has a EXECUTIVE
-                    if(PRESIDENTIAL_POWER_CHART[gameData.playerList.length][gameData.policyFascistEnacted-1] !== null){
-                        // Next Phase
-                        gameData.phase = GAME_PHASES.EXECUTIVE;
-                        sendMessage('ChangePhase');
-                    }
-                    else{
+                    if(PRESIDENTIAL_POWER_CHART[gameData.playerList.length][gameData.policyFascistEnacted-1] == null){
                         // Set Next President
                         setNextPresident();
                         // Next Phase
                         gameData.phase = GAME_PHASES.CHANCELLOR_SELECTION;
+                        sendMessage('ChangePhase');
+                    }
+                    else{
+                        // Next Phase
+                        gameData.phase = GAME_PHASES.EXECUTIVE;
                         sendMessage('ChangePhase');
                     }
                     break;
