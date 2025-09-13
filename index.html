@@ -265,7 +265,7 @@
             
             // Title
             const title = document.createElement('h1');
-            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.2';
+            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.3';
             Object.assign(title.style, {
                 color: '#333',
                 marginBottom: '20px'
@@ -357,11 +357,11 @@
             });
             networkData.peer.on('connection', function (connection) {
                 networkData.connections.push(connection);
-                createView_ConnectionStatus(`Hosting (${networkData.connections.length} player(s) connected)`, 'success');
+                createView_ConnectionStatus(`Hosting 1 (${networkData.connections.length} player(s) connected)`, 'success');
                 connection.on('data', receiveMessage);
                 connection.on('close', () => {
                     networkData.connections = networkData.connections.filter(c => c !== connection);
-                    createView_ConnectionStatus(`Hosting (${networkData.connections.length} player(s) connected)`, 'success');
+                    createView_ConnectionStatus(`Hosting 2 (${networkData.connections.length} player(s) connected)`, 'success');
                     // --------------------------- TODO ---------------------------------------------------------------------------------------------
                     // Set player without a connection as disconnected
                     gameData.playerList.forEach(p => {
