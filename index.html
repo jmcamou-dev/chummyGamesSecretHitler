@@ -63,7 +63,7 @@
             role: null,
             vote: null,
             isAlive: true,
-            vito: false
+            veto: false
         }
 
         // +++ Game Data +++
@@ -84,7 +84,6 @@
             wasPresident: null,
             wasChancellor: null,
             electionFailTracker: 0,
-            vetoEnabled: false,
             investigateName: null
 
         };
@@ -146,12 +145,11 @@
             gameData.phase = GAME_PHASES.CHANCELLOR_SELECTION;
             gameData.policyDeck = [];
             gameData.policyDiscardDeck = [];
-            gameData.policyLiberalEnacted= 0;
-            gameData.policyFascistEnacted= 0;
+            gameData.policyLiberalEnacted = 0;
+            gameData.policyFascistEnacted = 0;
             gameData.wasPresident = null;
             gameData.wasChancellor = null;
             gameData.electionFailTracker = 0;
-            gameData.vetoEnabled = false;
             gameData.investigateName = null;
 
             gameData.playerList.forEach(p => {
@@ -161,7 +159,7 @@
                 p.role = defualtPlayerGameData.role;
                 p.vote = defualtPlayerGameData.vote;
                 p.isAlive = defualtPlayerGameData.isAlive;
-                p.vito = defualtPlayerGameData.vito;
+                p.veto = defualtPlayerGameData.veto;
             });
             
             setUpPlayerTurnOrder();
@@ -267,7 +265,7 @@
             
             // Title
             const title = document.createElement('h1');
-            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.7';
+            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.8';
             Object.assign(title.style, {
                 color: '#333',
                 marginBottom: '20px'
@@ -717,24 +715,13 @@
             } 
             // Message from GUEST TO HOST
             else if (!message.userData.isHost && userData.isHost) {
-                let playerinfo = gameData.playerList.find(p => p.id == message.userData.id)
-                if(playerinfo){
-                    if(playerinfo.connectedStatus == 'Connected'){
-                        if(['playerJoined', 'startGame', 'IAmHere'].includes(message.type)){
-                            // Login Message from guest to host
-                            handleLoginGuestMessage(message);
-                        }
-                        else{
-                            // Message from guest to host
-                            handleGuestMessage(message);
-                        }
-                    }
+                if(['playerJoined', 'startGame', 'IAmHere'].includes(message.type)){
+                    // Login Message from guest to host
+                    handleLoginGuestMessage(message);
                 }
                 else{
-                    if(['playerJoined', 'startGame', 'IAmHere'].includes(message.type)){
-                        // Login Message from guest to host
-                        handleLoginGuestMessage(message);
-                    }
+                    // Message from guest to host
+                    handleGuestMessage(message);
                 }
             }
         }
@@ -896,12 +883,12 @@
                 phaseInfo.innerHTML = `<strong>Phase:</strong> ${gameData.phase}`;
                 gameContainer.appendChild(phaseInfo);
                 
-                // Veto enabled status
-                if(gameData.vetoEnabled == 'Yes'){
+                // veto enabled status
+                if(gameData.policyFascistEnacted == 5){
                     const vetoInfo = document.createElement('div');
                     vetoInfo.style.marginBottom = '15px';
                     vetoInfo.style.fontSize = '16px';
-                    vetoInfo.innerHTML = `<strong>Veto Enabled:</strong>`;
+                    vetoInfo.innerHTML = `<strong>VETO Enabled</strong>`;
                     gameContainer.appendChild(vetoInfo);
                 }
                 
@@ -1070,14 +1057,14 @@
                     playerDiv.style.borderRadius = '5px';
                     playerDiv.style.gap = '8px';
                     
-                    // Connection status bubble
-                    const statusBubble = document.createElement('div');
-                    statusBubble.style.width = '12px';
-                    statusBubble.style.height = '12px';
-                    statusBubble.style.borderRadius = '50%';
-                    statusBubble.style.backgroundColor = player.connectedStatus === 'Connected' ? '#4CAF50' : '#F44336';
-                    statusBubble.style.flexShrink = '0';
-                    playerDiv.appendChild(statusBubble);
+                    // // Connection status bubble
+                    // const statusBubble = document.createElement('div');
+                    // statusBubble.style.width = '12px';
+                    // statusBubble.style.height = '12px';
+                    // statusBubble.style.borderRadius = '50%';
+                    // statusBubble.style.backgroundColor = player.connectedStatus === 'Connected' ? '#4CAF50' : '#F44336';
+                    // statusBubble.style.flexShrink = '0';
+                    // playerDiv.appendChild(statusBubble);
                     
                     // Player name with VIP star
                     const nameSpan = document.createElement('span');
@@ -1184,12 +1171,12 @@
                 phaseInfo.innerHTML = `<strong>Phase:</strong> ${gameData.phase}`;
                 gameContainer.appendChild(phaseInfo);
                 
-                // Veto enabled status
-                if(gameData.policyFascistEnacted >= 3){
+                // veto enabled status
+                if(gameData.policyFascistEnacted == 5){
                     const vetoInfo = document.createElement('div');
                     vetoInfo.style.marginBottom = '15px';
                     vetoInfo.style.fontSize = '16px';
-                    vetoInfo.innerHTML = `<strong>Veto Enabled:</strong> ${gameData.vetoEnabled ? 'Yes' : 'No'}`;
+                    vetoInfo.innerHTML = `<strong>VETO Enabled:</strong>`;
                     gameContainer.appendChild(vetoInfo);
                 }
                 
@@ -1369,14 +1356,14 @@
                     playerDiv.style.borderRadius = '5px';
                     playerDiv.style.gap = '8px';
                     
-                    // Connection status bubble
-                    const statusBubble = document.createElement('div');
-                    statusBubble.style.width = '12px';
-                    statusBubble.style.height = '12px';
-                    statusBubble.style.borderRadius = '50%';
-                    statusBubble.style.backgroundColor = player.connectedStatus === 'Connected' ? '#4CAF50' : '#F44336';
-                    statusBubble.style.flexShrink = '0';
-                    playerDiv.appendChild(statusBubble);
+                    // // Connection status bubble
+                    // const statusBubble = document.createElement('div');
+                    // statusBubble.style.width = '12px';
+                    // statusBubble.style.height = '12px';
+                    // statusBubble.style.borderRadius = '50%';
+                    // statusBubble.style.backgroundColor = player.connectedStatus === 'Connected' ? '#4CAF50' : '#F44336';
+                    // statusBubble.style.flexShrink = '0';
+                    // playerDiv.appendChild(statusBubble);
                     
                     // Player name with VIP star
                     const nameSpan = document.createElement('span');
@@ -1439,26 +1426,26 @@
                 interactionSection.style.border = '2px solid #ccc';
                 interactionSection.style.borderRadius = '8px';GAME_PHASES.GAME_OVER;
 
-                if((GAME_PHASES.CHOOSING_POLICY || GAME_PHASES.REMOVING_POLICY )&&( currentPlayer.isChancellor || currentPlayer.isPresident)){
-                    if(gameData.policyFascistEnacted >= 3){
+                if((gameData.phase == GAME_PHASES.CHOOSING_POLICY || gameData.phase == GAME_PHASES.REMOVING_POLICY )&&( currentPlayer.isChancellor || currentPlayer.isPresident)){
+                    if(gameData.policyFascistEnacted == 5){
                         const title = document.createElement('div');
                         if(currentPlayer.isChancellor){
-                            title.innerHTML = '<strong>As Chancellor and help from President you can VITO the policies and a new president will be chosen:</strong>';
+                            title.innerHTML = '<strong>As Chancellor and help from President you can VETO the policies and a new president will be chosen:</strong>';
                         }
                         else{
-                            title.innerHTML = '<strong>As President and help from Chancellor you can VITO the policies and a new president will be chosen:</strong>';
+                            title.innerHTML = '<strong>As President and help from Chancellor you can VETO the policies and a new president will be chosen:</strong>';
                         }
                         title.style.marginBottom = '10px';
                         title.style.fontSize = '16px';
                         interactionSection.appendChild(title);
 
                         const button1 = document.createElement('button');
-                        button1.textContent = `VITO`;
+                        button1.textContent = `VETO`;
                         button1.style.margin = '5px';
                         button1.style.padding = '8px 16px';
                         button1.style.backgroundColor = 'gray';
                         button1.style.color = 'white';
-                        if(currentPlayer.vito){
+                        if(currentPlayer.veto){
                             button1.style.border = "2px solid gold";
                         }
                         else{
@@ -1466,7 +1453,7 @@
                         }
                         button1.style.borderRadius = '4px';
                         button1.style.cursor = 'pointer';
-                        button1.onclick = () => sendMessage('clickedVITO');
+                        button1.onclick = () => sendMessage('clickedVETO');
                         interactionSection.appendChild(button1);
 
                     }
@@ -2075,18 +2062,18 @@
         function handleGuestMessage(message) {
             resetDeck();
             switch (message.type) {
-                case 'clickedVITO':
-                    // Get vito state
-                    let vito = gameData.playerList.find(p => p.name === message.data.playerName).veto;
-                    if(vito){
-                        gameData.playerList.find(p => p.name === message.data.playerName).veto = false;
+                case 'clickedVETO':
+                    // Get veto state
+                    let veto = gameData.playerList.find(p => p.name === message.userData.name).veto;
+                    if(veto){
+                        gameData.playerList.find(p => p.name === message.userData.name).veto = false;
                     }
                     else{
-                        gameData.playerList.find(p => p.name === message.data.playerName).veto = true;
+                        gameData.playerList.find(p => p.name === message.userData.name).veto = true;
                     }
-                    // check how many vitos
-                    let playerVitoed = gameData.playerList.filter(p => p.vito);
-                    if(playerVitoed.length == 2){
+                    // check how many vetos
+                    let playerVetoed = gameData.playerList.filter(p => p.veto);
+                    if(playerVetoed.length == 2){
                         // remove top 3 cards
                         const topThreePolicies = gameData.policyDeck.slice(0, 2);
                         topThreePolicies.forEach(policy => {
@@ -2095,8 +2082,8 @@
                             
                         });
                         resetDeck();   
-                        // Reset Vitos
-                        gameData.playerList.forEach(player => {player.vito = false});
+                        // Reset Vetos
+                        gameData.playerList.forEach(player => {player.veto = false});
                         // Set next president
                         setNextPresident();
                         // next phase
@@ -2289,9 +2276,8 @@
                     setUpGameData();
                     sendMessage('ChangePhase');
                     break;
-                
-                createGameView_HostMain(false)
             }
+            createGameView_HostMain(false)
         }
         
         // ========================================
