@@ -20,7 +20,6 @@
         // +++ Game Views +++
         // ++++++++++++++++++
         const VIEWS = {
-            
             // Login Views
             LOGIN: 'login',
             AFTER_LOGIN_WAIT: 'afterLoginWait',
@@ -265,7 +264,7 @@
             
             // Title
             const title = document.createElement('h1');
-            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.8';
+            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.9';
             Object.assign(title.style, {
                 color: '#333',
                 marginBottom: '20px'
@@ -1023,7 +1022,18 @@
                         tile.textContent = 'WIN';
                     } else if(powers[i]) {
                         const powerText = powers[i].replace('PRESIDENTIAL_POWERS.', '').replace('_', ' ');
-                        tile.textContent = powerText.substring(0, 4);
+                        if(powers[i] == PRESIDENTIAL_POWERS.EXECUTION){
+                            tile.textContent = 'exec'
+                        }
+                        if(powers[i] == PRESIDENTIAL_POWERS.INVESTIGATE){
+                            tile.textContent = 'inv'
+                        }
+                        if(powers[i] == PRESIDENTIAL_POWERS.POLICY_PEEK){
+                            tile.textContent = 'peak'
+                        }
+                        if(powers[i] == PRESIDENTIAL_POWERS.SPECIAL_ELECTION){
+                            tile.textContent = 'elec'
+                        }
                         tile.title = powerText; // Full text on hover
                     }
                     
