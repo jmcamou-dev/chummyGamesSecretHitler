@@ -265,7 +265,7 @@
             
             // Title
             const title = document.createElement('h1');
-            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.1 ';
+            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.2';
             Object.assign(title.style, {
                 color: '#333',
                 marginBottom: '20px'
@@ -2012,7 +2012,18 @@
             }
             gameData.playerList.find(p => p.turnOrder == nextPresidentTurnOrder).isPresident = true;
         }
+        function resetDeck(){
+            if(gameData.policyDeck.length < 3){
+                // Shuffle in the policy discard to  
+                shuffleArray(gameData.policyDiscardDeck)
+                gameData.policyDiscardDeck.forEach(policy => {
+                    gameData.policyDeck.push(policy);
+                });
+                gameData.policyDiscardDeck = [];
+            }
+        }
         function handleGuestMessage(message) {
+            resetDeck();
             switch (message.type) {
                 case 'presidentPlayerChancellorChoice':
                     // Reset Votes
@@ -2065,12 +2076,6 @@
                                 gameData.electionFailTracker = 0
                                 // Add to fascist point
                                 gameData.policyFascistEnacted += 1;
-                                // Shuffle in the policy discard to  
-                                shuffleArray(gameData.policyDiscardDeck)
-                                gameData.policyDiscardDeck.forEach(policy => {
-                                    gameData.policyDeck.push(policy);
-                                });
-                                gameData.policyDiscardDeck = [];
                                 // Remove One FASCIST
                                 gameData.policyDeck.splice(gameData.policyDeck.indexOf(POLICY_TYPES.FASCIST), 1);
                                 let tempArray = gameData.policyDeck
@@ -2202,6 +2207,8 @@
                     setUpGameData();
                     sendMessage('ChangePhase');
                     break;
+                
+                createGameView_HostMain(false)
             }
         }
         
