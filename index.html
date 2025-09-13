@@ -267,7 +267,7 @@
             
             // Title
             const title = document.createElement('h1');
-            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.6';
+            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.7';
             Object.assign(title.style, {
                 color: '#333',
                 marginBottom: '20px'
@@ -1185,7 +1185,7 @@
                 gameContainer.appendChild(phaseInfo);
                 
                 // Veto enabled status
-                if(gameData.vetoEnabled == 'Yes'){
+                if(gameData.policyFascistEnacted >= 3){
                     const vetoInfo = document.createElement('div');
                     vetoInfo.style.marginBottom = '15px';
                     vetoInfo.style.fontSize = '16px';
@@ -1440,7 +1440,7 @@
                 interactionSection.style.borderRadius = '8px';GAME_PHASES.GAME_OVER;
 
                 if((GAME_PHASES.CHOOSING_POLICY || GAME_PHASES.REMOVING_POLICY )&&( currentPlayer.isChancellor || currentPlayer.isPresident)){
-                    if(gameData.policyFascistEnacted >= 4){
+                    if(gameData.policyFascistEnacted >= 3){
                         const title = document.createElement('div');
                         if(currentPlayer.isChancellor){
                             title.innerHTML = '<strong>As Chancellor and help from President you can VITO the policies and a new president will be chosen:</strong>';
@@ -2075,7 +2075,7 @@
         function handleGuestMessage(message) {
             resetDeck();
             switch (message.type) {
-                case 'clickVETO':
+                case 'clickedVITO':
                     // Get vito state
                     let vito = gameData.playerList.find(p => p.name === message.data.playerName).veto;
                     if(vito){
