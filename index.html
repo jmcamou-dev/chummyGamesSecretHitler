@@ -63,6 +63,7 @@
             role: null,
             vote: null,
             isAlive: true,
+            vito: false
         }
 
         // +++ Game Data +++
@@ -160,6 +161,7 @@
                 p.role = defualtPlayerGameData.role;
                 p.vote = defualtPlayerGameData.vote;
                 p.isAlive = defualtPlayerGameData.isAlive;
+                p.vito = defualtPlayerGameData.vito;
             });
             
             setUpPlayerTurnOrder();
@@ -265,7 +267,7 @@
             
             // Title
             const title = document.createElement('h1');
-            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.3';
+            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.4';
             Object.assign(title.style, {
                 color: '#333',
                 marginBottom: '20px'
@@ -1014,7 +1016,11 @@
                     const tile = document.createElement('div');
                     tile.style.width = '40px';
                     tile.style.height = '30px';
-                    tile.style.border = '2px solid #F44336';
+                    if(i >= 3 ){
+                        tile.style.border = '2px solid #F44336';
+                    }
+                        tile.style.border = '2px solid #FF2A00';
+                    }
                     tile.style.backgroundColor = i < gameData.policyFascistEnacted ? '#F44336' : 'white';
                     tile.style.display = 'flex';
                     tile.style.alignItems = 'center';
@@ -1297,7 +1303,11 @@
                     const tile = document.createElement('div');
                     tile.style.width = '40px';
                     tile.style.height = '30px';
-                    tile.style.border = '2px solid #F44336';
+                    if(i >= 3 ){
+                        tile.style.border = '2px solid #F44336';
+                    }
+                        tile.style.border = '2px solid #FF2A00';
+                    }
                     tile.style.backgroundColor = i < gameData.policyFascistEnacted ? '#F44336' : 'white';
                     tile.style.display = 'flex';
                     tile.style.alignItems = 'center';
@@ -1400,6 +1410,9 @@
                     if (gameData.phase == GAME_PHASES.VOTING_ELECTION && player.vote !== null && player.vote !== undefined && player.vote !== '') {
                         statusIndicators.push(`Voted`);
                     }
+                    if (gameData.phase == GAME_PHASES.GAME_OVER) {
+                        statusIndicators.push(`${player.role}`);
+                    }
                     
                     if (statusIndicators.length > 0) {
                         const statusSpan = document.createElement('span');
@@ -1424,7 +1437,40 @@
                 interactionSection.style.border = '2px solid #ccc';
                 interactionSection.style.borderRadius = '8px';GAME_PHASES.GAME_OVER;
 
-                if (gameData.phase === GAME_PHASES.GAME_OVER && currentPlayer && currentPlayer.isVIP) {
+                if((GAME_PHASES.CHOOSING_POLICY || GAME_PHASES.REMOVING_POLICY )&&( currentPlayer.isChancellor || currentPlayer.isPresident)){
+                    if(gameData.policyFascistEnacted >= 4){
+                        const title = document.createElement('div');
+                        if(currentPlayer.isChancellor){
+                            title.innerHTML = '<strong>As Chancellor and help from President you can VITO the policies and a new president will be chosen:</strong>';
+                        }
+                        else{
+                            title.innerHTML = '<strong>As President and help from Chancellor you can VITO the policies and a new president will be chosen:</strong>';
+                        }
+                        title.style.marginBottom = '10px';
+                        title.style.fontSize = '16px';
+                        interactionSection.appendChild(title);
+
+                        const button1 = document.createElement('button');
+                        button1.textContent = `VITO`;
+                        button1.style.margin = '5px';
+                        button1.style.padding = '8px 16px';
+                        button1.style.backgroundColor = 'gray';
+                        button1.style.color = 'white';
+                        if(currentPlayer.vito){
+                            button1.style.border = "2px solid gold";
+                        }
+                        else{
+                            button1.style.border = 'none';
+                        }
+                        button1.style.borderRadius = '4px';
+                        button1.style.cursor = 'pointer';
+                        button1.onclick = () => sendMessage('clickedVITO');
+                        interactionSection.appendChild(button1);
+
+                    }
+                }
+
+                if (gameData.phase === GAME_PHASES.GAME_OVER) {
                     const title = document.createElement('div');
                     if(gameData.policyLiberalEnacted == 5){
                         title.innerHTML = '<strong>GAME OVER: LIBERAL WIN:</strong>';
@@ -1438,29 +1484,31 @@
                     title.style.fontSize = '16px';
                     interactionSection.appendChild(title);
 
-                    const button = document.createElement('button');
-                    button.textContent = `New Players`;
-                    button.style.margin = '5px';
-                    button.style.padding = '8px 16px';
-                    button.style.backgroundColor = 'gray';
-                    button.style.color = 'white';
-                    button.style.border = 'none';
-                    button.style.borderRadius = '4px';
-                    button.style.cursor = 'pointer';
-                    button.onclick = () => sendMessage('newPlayers');
-                    interactionSection.appendChild(button);
+                    if(currentPlayer && currentPlayer.isVIP){
+                        const button = document.createElement('button');
+                        button.textContent = `New Players`;
+                        button.style.margin = '5px';
+                        button.style.padding = '8px 16px';
+                        button.style.backgroundColor = 'gray';
+                        button.style.color = 'white';
+                        button.style.border = 'none';
+                        button.style.borderRadius = '4px';
+                        button.style.cursor = 'pointer';
+                        button.onclick = () => sendMessage('newPlayers');
+                        interactionSection.appendChild(button);
 
-                    const button1 = document.createElement('button');
-                    button1.textContent = `Same Players`;
-                    button1.style.margin = '5px';
-                    button1.style.padding = '8px 16px';
-                    button1.style.backgroundColor = 'gray';
-                    button1.style.color = 'white';
-                    button1.style.border = 'none';
-                    button1.style.borderRadius = '4px';
-                    button1.style.cursor = 'pointer';
-                    button1.onclick = () => sendMessage('samePlayers');
-                    interactionSection.appendChild(button1);
+                        const button1 = document.createElement('button');
+                        button1.textContent = `Same Players`;
+                        button1.style.margin = '5px';
+                        button1.style.padding = '8px 16px';
+                        button1.style.backgroundColor = 'gray';
+                        button1.style.color = 'white';
+                        button1.style.border = 'none';
+                        button1.style.borderRadius = '4px';
+                        button1.style.cursor = 'pointer';
+                        button1.onclick = () => sendMessage('samePlayers');
+                        interactionSection.appendChild(button1);
+                    }
                 }
 
                 else if (gameData.phase === GAME_PHASES.CHANCELLOR_SELECTION && currentPlayer && currentPlayer.isPresident) {
@@ -2025,6 +2073,38 @@
         function handleGuestMessage(message) {
             resetDeck();
             switch (message.type) {
+                case 'clickVETO':
+                    // Get vito state
+                    let vito = gameData.playerList.find(p => p.name === message.data.playerName).veto;
+                    if(vito){
+                        gameData.playerList.find(p => p.name === message.data.playerName).veto = false;
+                    }
+                    else{
+                        gameData.playerList.find(p => p.name === message.data.playerName).veto = true;
+                    }
+                    // check how many vitos
+                    let playerVitoed = gameData.playerList.filter(p => p.vito);
+                    if(playerVitoed.length == 2){
+                        // remove top 3 cards
+                        const topThreePolicies = gameData.policyDeck.slice(0, 2);
+                        topThreePolicies.forEach(policy => {
+                            gameData.policyDeck.splice(gameData.policyDeck.indexOf(policy), 1);
+                            gameData.policyDiscardDeck.push(policy)
+                            
+                        });
+                        resetDeck();   
+                        // Reset Vitos
+                        gameData.playerList.forEach(player => {player.vito = false});
+                        // Set next president
+                        setNextPresident();
+                        // next phase
+                        gameData.phase = GAME_PHASES.CHANCELLOR_SELECTION
+                        sendMessage('ChangePhase');
+                    }
+                    else{
+                        sendMessage('ChangePhase');
+                    }
+                    break;
                 case 'presidentPlayerChancellorChoice':
                     // Reset Votes
                     gameData.playerList.forEach(player => {player.vote = null});
