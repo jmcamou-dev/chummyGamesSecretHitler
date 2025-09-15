@@ -17,6 +17,15 @@
         let minNumberOfPlayers = 5
         let maxNumberOfPlayers = 10
 
+        // +++ Connection States +++
+        // +++++++++++++++++++++++++
+        const CONNECTION_STATES = {
+            DISCONNECTED: 'disconnected',
+            CONNECTING: 'connecting',
+            CONNECTED: 'connected',
+            RECONNECTING: 'reconnecting'
+        };
+
         // +++ Game Views +++
         // ++++++++++++++++++
         const VIEWS = {
@@ -45,7 +54,7 @@
             id: Array.from({ length: 7 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]).join(''),
             name: '',
             // Connection Info
-            connectedStatus: 'Connected',
+            connectedStatus: CONNECTION_STATES.CONNECTED,
             stillHere: true,
             // Game Meta Info
             currentView: VIEWS.LOGIN,
@@ -226,25 +235,33 @@
         // LOGIN FUNCTIONS
         // ========================================
 
-        function startPingToCheckPlayerConnection(checkseconds = 30){
+        function startCheckPlayerHeartBeat(checkseconds = 15){
             setInterval(() => {
                 gameData.playerList.forEach(player => {
                     player.stillHere = false
                 });
                 sendMessage('YallStillHere')
-                const hello = setInterval(() => {
+                const heartBeat = setInterval(() => {
                     gameData.playerList.forEach(player => {
                         if(!player.stillHere){
                             console.log(player.name+' is missing')
-                            let connToRid = networkData.connections.find(conn => conn.peer === player.peerId)
-                            if(connToRid){
-                                connToRid.close();
-                            }
+                            // let connToRid = networkData.connections.find(conn => conn.peer === player.peerId)
+                            // if(connToRid){
+                            //     connToRid.close();
+                            // }
+                            player.connectedStatus = CONNECTION_STATES.RECONNECTING;
+                            updateView_PlayerStatus();
                         }
                     });
 
                     clearInterval(hello);
                 }, (checkseconds*1000)/2); 
+            }, (checkseconds*1000)); 
+        }
+        
+        function startPlayerToHostHeartBeat(checkseconds = 15){
+            setInterval(() => {
+                sendMessage('IAmStillHere');
             }, (checkseconds*1000)); 
         }
         
@@ -352,7 +369,7 @@
                 // suffle avalable colors
                 createView_AfterLoginWait(true);
                 createView_PlayerStatus();
-                startPingToCheckPlayerConnection(30);
+                startCheckPlayerHeartBeat();
             });
             networkData.peer.on('connection', function (connection) {
                 networkData.connections.push(connection);
@@ -365,7 +382,7 @@
                     // Set player without a connection as disconnected
                     gameData.playerList.forEach(p => {
                         if(!networkData.connections.some(conn => conn.peer === p.peerId)){
-                            p.connectedStatus = 'Disconnected'
+                            p.connectedStatus = CONNECTION_STATES.DISCONNECTED;
                         }
                     });
                     createView_AfterLoginWait(false);
@@ -416,7 +433,7 @@
                     updateView_PlayerStatus();
                     break;
                 
-                case 'moveToWaitRoom':
+                case 'moveOutOfLogin':
                     // If new Player show wait view and player statuses
                     if (message.data.targetPlayerId === userData.id) {
                         if(gameData.gameStarted){
@@ -434,6 +451,7 @@
                         }
                         updateView_PlayerStatus();
                     }
+                    startPlayerToHostHeartBeat();
                     break;
 
                 case 'gameStarted':
@@ -463,15 +481,17 @@
         
         function handleLoginGuestMessage(message) {
             switch (message.type) {
+                case 'IAmStillHere':
+                    updatePlayerConnectionStatus(message.userData.id, CONNECTION_STATES.CONNECTED);
+                    break;
                 case 'IAmHere':
                     gameData.playerList.filter(p => p.id == message.userData.id)[0].stillHere = true;
                     break;
-                
                 case 'playerJoined':
                     const { newUserData } = message.data;
                     
                     // (HOST LOGIN ACTION) Check if name is already in use by a connected user
-                    if (gameData.playerList.some(p => p.name === newUserData.name && p.connectedStatus === 'Connected')) {
+                    if (gameData.playerList.some(p => p.name === newUserData.name && p.connectedStatus === CONNECTION_STATES.CONNECTED)) {
                         sendMessage('nameInUse', { targetPlayerId: newUserData.id });
                         // Disconnect the player
                         setTimeout(() => {
@@ -485,12 +505,12 @@
                     
                     // (HOST LOGIN ACTION) Update disconnected existing player
                     // Check if new connection is a disconnected player
-                    const disconnectedExistingPlayerIndex = gameData.playerList.findIndex(p => p.name === newUserData.name && p.connectedStatus === 'Disconnected');
+                    const disconnectedExistingPlayerIndex = gameData.playerList.findIndex(p => p.name === newUserData.name && p.connectedStatus === CONNECTION_STATES.DISCONNECTED);
                     if (disconnectedExistingPlayerIndex >= 0) {
                         existPlayer = gameData.playerList[disconnectedExistingPlayerIndex]
                         existPlayer.peerId = newUserData.peerId,
                         existPlayer.id = newUserData.id,
-                        existPlayer.connectedStatus = 'Connected'
+                        existPlayer.connectedStatus = CONNECTION_STATES.CONNECTED;
                     } else {                    
                         // (HOST LOGIN ACTION) New Player BUT game has already started
                         if (gameData.gameStarted) {
@@ -513,7 +533,7 @@
                     }
                     createView_AfterLoginWait(false);
                     updateView_PlayerStatus();
-                    sendMessage('moveToWaitRoom', { targetPlayerId: newUserData.id });
+                    sendMessage('moveOutOfLogin', { targetPlayerId: newUserData.id });
                     break;
 
                 case 'startGame':
@@ -624,8 +644,10 @@
                         playerLine += ' (🌟VIP)';
                     }
                     // Add connection status with emojis
-                    if (player.connectedStatus === 'Connected') {
+                    if (player.connectedStatus === CONNECTION_STATES.CONNECTED) {
                         playerLine += ' 🟢';
+                    } else if (player.connectedStatus === CONNECTION_STATES.RECONNECTING) {
+                        playerLine += ' 🟡';
                     } else {
                         playerLine += ' 🔴';
                     }
@@ -637,6 +659,10 @@
             }
         }
 
+        function updatePlayerConnectionStatus(id, newStatus){
+            gameData.playerList.find(p => p.id == id).connectedStatus = newStatus;
+            updateView_PlayerStatus();
+        }
         // ========================================
         // UTILITY FUNCTIONS
         // ========================================
@@ -703,7 +729,7 @@
             // Message from HOST TO GUEST
             if (message.userData.isHost && !userData.isHost) {
                 gameData = message.gameData;
-                if(['updatePlayerStatus', 'moveToWaitRoom', 'gameStarted', 'nameInUse', 'gameAlreadyStarted', 'YallStillHere'].includes(message.type)){
+                if(['updatePlayerStatus', 'moveOutOfLogin', 'gameStarted', 'nameInUse', 'gameAlreadyStarted', 'YallStillHere'].includes(message.type)){
                     // Login Message from host to guest
                     handleLoginHostMessage(message);
                 }
@@ -714,7 +740,7 @@
             } 
             // Message from GUEST TO HOST
             else if (!message.userData.isHost && userData.isHost) {
-                if(['playerJoined', 'startGame', 'IAmHere'].includes(message.type)){
+                if(['playerJoined', 'startGame', 'IAmHere', 'IAmStillHere'].includes(message.type)){
                     // Login Message from guest to host
                     handleLoginGuestMessage(message);
                 }
@@ -1072,7 +1098,7 @@
                     // statusBubble.style.width = '12px';
                     // statusBubble.style.height = '12px';
                     // statusBubble.style.borderRadius = '50%';
-                    // statusBubble.style.backgroundColor = player.connectedStatus === 'Connected' ? '#4CAF50' : '#F44336';
+                    // statusBubble.style.backgroundColor = player.connectedStatus === CONNECTION_STATES.CONNECTED ? '#4CAF50' : '#F44336';
                     // statusBubble.style.flexShrink = '0';
                     // playerDiv.appendChild(statusBubble);
                     
@@ -1371,7 +1397,7 @@
                     // statusBubble.style.width = '12px';
                     // statusBubble.style.height = '12px';
                     // statusBubble.style.borderRadius = '50%';
-                    // statusBubble.style.backgroundColor = player.connectedStatus === 'Connected' ? '#4CAF50' : '#F44336';
+                    // statusBubble.style.backgroundColor = player.connectedStatus === ONNECTION_STATES.CONNECTED ? '#4CAF50' : '#F44336';
                     // statusBubble.style.flexShrink = '0';
                     // playerDiv.appendChild(statusBubble);
                     
