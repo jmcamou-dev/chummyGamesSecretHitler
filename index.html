@@ -281,7 +281,7 @@
             
             // Title
             const title = document.createElement('h1');
-            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.9';
+            title.textContent = 'Secret Hitler Game - by ChummyGames - v1.11';
             Object.assign(title.style, {
                 color: '#333',
                 marginBottom: '20px'
@@ -505,7 +505,7 @@
                     
                     // (HOST LOGIN ACTION) Update disconnected existing player
                     // Check if new connection is a disconnected player
-                    const disconnectedExistingPlayerIndex = gameData.playerList.findIndex(p => p.name === newUserData.name && p.connectedStatus === CONNECTION_STATES.DISCONNECTED);
+                    const disconnectedExistingPlayerIndex = gameData.playerList.findIndex(p => p.name === newUserData.name && p.connectedStatus !== CONNECTION_STATES.CONNECTED);
                     if (disconnectedExistingPlayerIndex >= 0) {
                         existPlayer = gameData.playerList[disconnectedExistingPlayerIndex]
                         existPlayer.peerId = newUserData.peerId,
