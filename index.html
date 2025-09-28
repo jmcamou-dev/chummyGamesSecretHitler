@@ -19,7 +19,7 @@
             addtodiv("Old PC ID "+myPCID);
         }
         else{
-
+            localStorage.setItem('myPCID', myPCID);
         }
 
         function sendMessage(msg){
@@ -62,7 +62,7 @@
         document.body.appendChild(button);
 
         const divMain = document.createElement('div');
-        divMain.innerHTML = 'Hello-v1.1';
+        divMain.innerHTML = 'Hello-v1.2';
         document.body.appendChild(divMain);
         addtodiv(myPCID);
 
