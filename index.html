@@ -8,6 +8,15 @@
 </head>
 <body>
     <script>
+
+        const button = document.createElement('button');
+        button.textContent = 'Hello';
+        document.body.appendChild(button);
+
+        const divMain = document.createElement('div');
+        divMain.innerHTML = 'Hello-v1.3';
+        document.body.appendChild(divMain);
+        //---------------------------------
         const MY_PEER_CODE = 'Chummy';
         let mypeer;
         let myconnections = [];
@@ -16,10 +25,11 @@
         let myPCID = Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]).join('');
         if (localStorage.getItem('myPCID') !== null) {
             myPCID = localStorage.getItem('myPCID')
-            addtodiv("Old PC ID "+myPCID);
+            addtodiv(`Old PC ID ${myPCID}`);
         }
         else{
             localStorage.setItem('myPCID', myPCID);
+            addtodiv(`NEW PC ID ${myPCID}`);
         }
 
         function sendMessage(msg){
@@ -56,16 +66,6 @@
             });
             mypeer.on('error', (err) => {addtodiv("Join-Error")});// Error before connecting to host
         }
-
-        const button = document.createElement('button');
-        button.textContent = 'Hello';
-        document.body.appendChild(button);
-
-        const divMain = document.createElement('div');
-        divMain.innerHTML = 'Hello-v1.2';
-        document.body.appendChild(divMain);
-        addtodiv(myPCID);
-
         function addtodiv(msg){
             divMain.innerHTML += '<br>'+msg;
         }
