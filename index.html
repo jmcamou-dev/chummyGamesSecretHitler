@@ -13,7 +13,14 @@
         let myconnections = [];
 
         let isHost = null;
-        let myName = Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]).join('');
+        let myPCID = Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]).join('');
+        if (localStorage.getItem('myPCID') !== null) {
+            myPCID = localStorage.getItem('myPCID')
+            addtodiv("Old PC ID "+myPCID);
+        }
+        else{
+
+        }
 
         function sendMessage(msg){
             myconnections.filter(c => c.open).forEach(c => {c.send(msg);});
@@ -26,7 +33,7 @@
                 addtodiv(connection.peer);
                 myconnections.push(connection);
                 addtodiv("Host-Connection")
-                addtodiv(connection.metadata.name);
+                addtodiv(connection.metadata.pcID);
                 connection.on('data', (msg) => {addtodiv("Host-Connection-Data")}); // Triggered if a player is trying to send a message
                 connection.on('close', () => {addtodiv("Host-Connection-Close")}); // Triggered if host connection failed
             });
@@ -39,7 +46,7 @@
             mypeer.on('open', (id) => { // My random connection is created
                 addtodiv("Join-Open");
                 addtodiv(id);
-                const connection = mypeer.connect(MY_PEER_CODE, { metadata: { name: myName }});
+                const connection = mypeer.connect(MY_PEER_CODE, { metadata: { pcID: myPCID }});
                 myconnections.push(connection);
                 addtodiv(connection.peer)
                 connection.on('open', () => {addtodiv("Join-Open-Open");}); // Successfully connected with host
@@ -55,9 +62,9 @@
         document.body.appendChild(button);
 
         const divMain = document.createElement('div');
-        divMain.innerHTML = 'Hello-v1.0';
+        divMain.innerHTML = 'Hello-v1.1';
         document.body.appendChild(divMain);
-        addtodiv(myName);
+        addtodiv(myPCID);
 
         function addtodiv(msg){
             divMain.innerHTML += '<br>'+msg;
