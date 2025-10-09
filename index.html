@@ -7,71 +7,305 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
 </head>
 <body>
-    <script>
-
-        const button = document.createElement('button');
-        button.textContent = 'Hello';
-        document.body.appendChild(button);
-
-        const divMain = document.createElement('div');
-        divMain.innerHTML = 'Hello-v1.3';
-        document.body.appendChild(divMain);
+    <script> // Chummy Games's Constants
+        const CONNECTION_STATES = {
+            DISCONNECTED: 'disconnected',
+            CONNECTED: 'connected'
+        };
+        const CG_WORLDS = {
+            // Games
+            ColorGame: 'ColorGame',
+            // Meta worlds
+            ChummyGamesMenu: 'ChummyGamesMenu',
+            ChummyGamesLogin: 'ChummyGamesLogin',
+            HeartBeatPingPong: 'HeartBeatPingPong',
+        }
+        let ChummyGamesData = {}
+        let CG_MESSAGES = {}
+        let CG_VIEWS = {}
+    </script>
+    <script> // PC Data
         //---------------------------------
-        const MY_PEER_CODE = 'Chummy';
+        const MY_PEER_CODE = 'ChummyGames';
         let mypeer;
         let myconnections = [];
-
+        let lastPong = Date.now();
         let isHost = null;
-        let myPCID = Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]).join('');
-        if (localStorage.getItem('myPCID') !== null) {
-            myPCID = localStorage.getItem('myPCID')
-            addtodiv(`Old PC ID ${myPCID}`);
+        let myName = null;
+        let myPCID = null;
+        //---------------------------------
+        let currentView = null
+    </script>
+    <script> // Functions
+        function getCode(codeSize){
+            return Array.from({ length: codeSize }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]).join('');
+        }    
+    </script>
+    <script> // Heart Beat Ping Pong
+        function startHostToPlayerHeartbeat() {
+            myconnections.forEach(c => {c.lastPong = Date.now();});
+            // Send ping every 5 seconds
+            let pingInterval = setInterval(() => {
+                sendMessage(CG_WORLDS.HeartBeatPingPong, 'host-ping');
+            }, 5000);
+            // Check if connection is dead every 2 seconds
+            let checkTimeout = setInterval(() => {
+                myconnections.forEach(c => {
+                    if (Date.now() - c.lastPong > 15000) {
+                        console.log("Host HeartBeat Disconnected PCID: "+c.metadata.pcID)
+                        c.connStatus = CONNECTION_STATES.DISCONNECTED;
+                    }
+                });
+            }, 2000);
         }
-        else{
-            localStorage.setItem('myPCID', myPCID);
-            addtodiv(`NEW PC ID ${myPCID}`);
+        function startPlayerToHostHeartbeat() {
+            lastPong = Date.now();
+            // Send ping every 5 seconds
+            let pingInterval = setInterval(() => {
+                sendMessage(CG_WORLDS.HeartBeatPingPong, 'player-ping');
+            }, 5000);
+            // Check if connection is dead every 2 seconds
+            let checkTimeout = setInterval(() => {
+                if (Date.now() - lastPong > 15000) {
+                    console.log("Player HeartBeat Skipped a beat")
+                    location.reload();
+                }
+            }, 2000);
         }
-
-        function sendMessage(msg){
-            myconnections.filter(c => c.open).forEach(c => {c.send(msg);});
+        //---------------------------------
+        CG_MESSAGES['HeartBeatPingPong'] = function (messageData){
+            // PLAYER to HOST
+            if (isHost && !messageData.isHost){
+                if(messageData.type === 'player-ping') {
+                    sendMessage(CG_WORLDS.HeartBeatPingPong, 'host-pong', {'toPCID': messageData.pcID});
+                }
+                if(messageData.type === 'player-pong') {
+                    myconnections.forEach(c => {
+                        if(c.conn.metadata.pcID == messageData.pcID){
+                            c.lastPong = Date.now();
+                            if(c.connStatus == CONNECTION_STATES.DISCONNECTED){
+                                c.connStatus = CONNECTION_STATES.CONNECTED;
+                            }
+                        }
+                    });
+                }
+            }
+            // HOST to PLAYER 
+            else if (!isHost && messageData.isHost){
+                if(messageData.type === 'host-ping') {
+                    sendMessage(CG_WORLDS.HeartBeatPingPong, 'player-pong');
+                }
+                if(myPCID == messageData.elements.toPCID && messageData.type === 'host-pong') {
+                    lastPong = Date.now();
+                }
+            }
         }
-        
+    </script>
+    <script> // MESSAGES
+        function sendMessage(world, type, elements={}) {
+            // Log if not heartbeat
+            if(world != CG_WORLDS.HeartBeatPingPong){
+                console.log(`SEND MESSAGE: ${world}: ${type}`,elements);
+            }
+            // Add message metadata
+            messageData = {}
+            messageData.world = world;
+            messageData.type = type;
+            messageData.isHost = isHost;
+            messageData.pcID = myPCID;
+            messageData.name = myName;
+            if(isHost){messageData.ChummyGamesData = ChummyGamesData;}
+            else{messageData.ChummyGamesData = {};}
+            messageData.elements = elements;
+            // Send message data
+            myconnections.forEach(c => {if(c.conn.open){c.conn.send(messageData);}});
+        }
+        function receiveMessage(messageData){
+            // Host to Player 
+            if (!isHost && messageData.isHost){
+                ChummyGamesData = messageData.ChummyGamesData;
+            }
+            // Log if not heartbeat
+            if(messageData.world != CG_WORLDS.HeartBeatPingPong){
+                console.log(`RECEIVED MESSAGE: ${messageData.world}: ${messageData.type}`,messageData);
+            }
+            // Handle message
+            CG_MESSAGES[messageData.world](messageData);
+        }
+    </script>
+    <script> // Handle New Connection
+        function handleNewConnection(connection){
+            // Check if another connection for the same PCID
+            let foundPCID = false;
+            let hasName = false;
+            myconnections.forEach(c => {
+                if(c.conn.metadata.pcID == connection.metadata.pcID){
+                    foundPCID = true;
+                    c.conn.close();
+                    c.conn = connection;
+                    c.lastPong = Date.now();
+                    c.connStatus= CONNECTION_STATES.CONNECTED;
+                    if(c.name !== null){
+                        hasName = true;
+                    }
+                }
+            });
+            // New Connection, New PCID
+            if(!foundPCID){
+                 console.log("NEW CONNECTION WITH NEW PCID")
+                // New Connection, New PCID, HAS A NAME
+                if(connection.metadata.name !== null){
+                    console.log("NEW CONNECTION WITH NAME")
+                    // Check if another connection for the same NAME
+                    let foundName = false;
+                    let foundNameWithNewConn = false;
+                    myconnections.forEach(c => {
+                        if(c.name == connection.metadata.name){
+                            foundName = true;
+                            if(c.connStatus == CONNECTION_STATES.DISCONNECTED){
+                                foundNameWithNewConn = true;
+                                c.conn.close();
+                                c.conn = connection;
+                                c.lastPong = Date.now();
+                                c.connStatus= CONNECTION_STATES.CONNECTED;
+                            }
+                        }
+                    });
+                    // New connection, New PCID, with a name that is not currently in use in chummyGames - Can play game
+                    if(foundNameWithNewConn){
+                        sendMessage(CG_WORLDS.ChummyGamesLogin, 'EnterChummyGame', {'toPCID': connection.metadata.pcID});
+                    }
+                    // New connection, New PCID, with a name that is currently in use in chummyGames - Need to login
+                    else if(foundName && !foundNameWithNewConn){
+                        myconnections.push({conn: connection, lastPong: Date.now(), connStatus: CONNECTION_STATES.CONNECTED, name: null});
+                        sendMessage(CG_WORLDS.ChummyGamesLogin,'GoToLogin', {'toPCID': connection.metadata.pcID});
+                    }
+                    // New Connection, New PCID, with a name that is not in chummyGames - Need to login
+                    else if(!foundName){
+                        myconnections.push({conn: connection, lastPong: Date.now(), connStatus: CONNECTION_STATES.CONNECTED, name: null});
+                        sendMessage(CG_WORLDS.ChummyGamesLogin,'GoToLogin', {'toPCID': connection.metadata.pcID});
+                    }
+                }
+                // New Connection, New PCID, DOES NOT HAVE A NAME - Need to login
+                else{
+                    console.log("NEW CONNECTION WITHOUT NAME")
+                    myconnections.push({conn: connection, lastPong: Date.now(), connStatus: CONNECTION_STATES.CONNECTED, name: null});
+                    sendMessage(CG_WORLDS.ChummyGamesLogin,'GoToLogin', {'toPCID': connection.metadata.pcID});
+                }
+            }
+            // New Connection, OLD PCID, has no name - Can play game
+            else if(!hasName){
+                sendMessage(CG_WORLDS.ChummyGamesLogin,'GoToLogin', {'toPCID': connection.metadata.pcID});
+            }
+            // New Connection, OLD PCID, has name - Can play game
+            else if(hasName){
+                sendMessage(CG_WORLDS.ChummyGamesLogin,'EnterChummyGame', {'toPCID': connection.metadata.pcID});
+            }
+        }
         function handleHost() {
             mypeer = new Peer(MY_PEER_CODE);
-            mypeer.on('open', (id) => {addtodiv("Host-Open");addtodiv(id);isHost = true;}); // True Host
-            mypeer.on('connection', function (connection) { // Triggered if a player is connecting 
-                addtodiv(connection.peer);
-                myconnections.push(connection);
-                addtodiv("Host-Connection")
-                addtodiv(connection.metadata.pcID);
-                connection.on('data', (msg) => {addtodiv("Host-Connection-Data")}); // Triggered if a player is trying to send a message
-                connection.on('close', () => {addtodiv("Host-Connection-Close")}); // Triggered if host connection failed
+            // True Host
+            mypeer.on('open', (id) => {
+                console.log("Host-Open: With ID - "+id);
+                isHost = true;
+                startHostToPlayerHeartbeat();
+            }); 
+            // Triggered if a player is connecting 
+            mypeer.on('connection', function (connection) {
+                console.log("Host-Connection: With PCID - "+connection.metadata.pcID+": With PEER - "+connection.peer);
+                // Triggered when player is fully connected
+                connection.on('open', (messageData) => {console.log("Host-Connection-open");handleNewConnection(connection);}); 
+                // Triggered if a player is trying to send a message
+                connection.on('data', (messageData) => {receiveMessage(messageData);}); 
+                // Triggered if player connection failed
+                connection.on('close', () => {
+                    console.log("Host-Connection-Close");
+                    myconnections.forEach(c => {
+                        if(c.conn.metadata.pcID == connection.metadata.pcID){
+                            c.connStatus = CONNECTION_STATES.DISCONNECTED;
+                        }
+                    });
+                });
             });
-            mypeer.on('error', (err) => {addtodiv("Host-Error");handleJoin();}); // Triggered if there is already a host or something new happend
+            // Triggered if there is already a host or something new happend
+            mypeer.on('error', (err) => {console.log("Host-Error");});
         }
-        
         function handleJoin() {
             isHost = false;
             mypeer = new Peer();
-            mypeer.on('open', (id) => { // My random connection is created
-                addtodiv("Join-Open");
-                addtodiv(id);
-                const connection = mypeer.connect(MY_PEER_CODE, { metadata: { pcID: myPCID }});
-                myconnections.push(connection);
-                addtodiv(connection.peer)
-                connection.on('open', () => {addtodiv("Join-Open-Open");}); // Successfully connected with host
-                connection.on('data', (msg) => {addtodiv("Join-Open-Data")}); // Message from player or host
-                connection.on('close', () => {addtodiv("Join-Open-Close")}); // Host connection failed or my connection failed
-                connection.on('error', (err) => {addtodiv("Join-Open-Error")}); // Error while connected to host
+            // My random connection is created
+            mypeer.on('open', (id) => { 
+                console.log("Join-Open: With ID - "+id);
+                const connection = mypeer.connect(MY_PEER_CODE, { metadata: { pcID: myPCID, name: myName }});
+                myconnections.push({conn:connection});
+                 // Successfully connected with host
+                connection.on('open', () => {console.log("Join-Open-Open: With PEER - "+connection.peer);startPlayerToHostHeartbeat();});
+                // Message from player or host
+                connection.on('data', (messageData) => {receiveMessage(messageData);}); 
+                // Host connection failed or my connection failed
+                connection.on('close', () => {console.log("Join-Open-Close")}); 
+                // Error while connected to host
+                connection.on('error', (err) => {console.log("Join-Open-Error")}); 
             });
-            mypeer.on('error', (err) => {addtodiv("Join-Error")});// Error before connecting to host
+            // Error before connecting to host
+            mypeer.on('error', (err) => {console.log("Join-Error")});
         }
-        function addtodiv(msg){
-            divMain.innerHTML += '<br>'+msg;
+    </script>
+    <script> // Handle Local Storage
+        function setMyName(name){
+            myName = name;
+            localStorage.setItem('ChummyGames-NAME', myName);
         }
+        function setCurrentView(newView){
+            currentView = newView;
+            localStorage.setItem('ChummyGames-currentView', currentView);
+        }
+        function handleLocalStorage(){
+            // Player PCID
+            if (localStorage.getItem('ChummyGames-PC-ID') !== null) {
+                let OLDmyPCID = localStorage.getItem('ChummyGames-PC-ID')
+                if(OLDmyPCID.length != 12 ){
+                    localStorage.setItem('ChummyGames-PC-ID', myPCID);
+                    console.log(`NEW PC ID: ${myPCID}`);
+                }
+                else{
+                    myPCID = OLDmyPCID;
+                    console.log(`Old PC ID: ${myPCID}`);
+                }
+            }
+            else{
+                myPCID = getCode(12);
+                localStorage.setItem('ChummyGames-PC-ID', myPCID);
+                console.log(`NEW PC ID: ${myPCID}`);
+            }
+            // Player Name
+            if (localStorage.getItem('ChummyGames-NAME') !== null) {
+                myName = localStorage.getItem('ChummyGames-NAME')
+                console.log(`Old NAME: ${myName}`);
+            }
+            // Player currentView
+            if (localStorage.getItem('ChummyGames-currentView') !== null) {
+                currentView = localStorage.getItem('ChummyGames-currentView')
+                console.log(`Old currentView: ${currentView}`);
+            }
+        }
+    </script>
+    <script> //bootup
+        //---------------------------------
+        function bootup(){
 
-        handleHost()
-        
+            handleLocalStorage();
+
+            if (window.location.hash === '#host' || window.location.pathname.endsWith('/host')) {
+                console.log("URL indicates HOST mode");
+                handleHost();
+            }
+            else {
+                console.log("URL indicates JOIN mode");
+                handleJoin();
+            }
+        }
+        bootup()
     </script>
 </body>
 </html>

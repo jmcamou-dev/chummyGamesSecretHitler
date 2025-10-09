@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChummyGames</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script> // Chummy Games's Constants
+        const CONNECTION_STATES = {
+            DISCONNECTED: 'disconnected',
+            CONNECTED: 'connected'
+        };
+        let ChummyGamesData = {}
+        const CG_WORLDS = {
+            // Games
+            ColorGame: 'ColorGame',
+            // Meta worlds
+            ChummyGamesMenu: 'ChummyGamesMenu',
+            ChummyGamesLogin: 'ChummyGamesLogin',
+            HeartBeatPingPong: 'HeartBeatPingPong',
+        }
+        let CG_MESSAGES = {}
+        let CG_VIEWS = {}
+        let CG_CONSTANT_DATA = {}
+        let CG_DEFAULT_DATA = {}
+        let CG_DEFAULT_PLAYER_DATA = {}
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+    <script src="game1.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <script> // ColorGame - Game1
+        CG_CONSTANT_DATA[CG_WORLDS.ColorGame] = {
+            colors: ['red','blue','green','yellow','purple','pink']
+        }
+        CG_DEFAULT_PLAYER_DATA[CG_WORLDS.ColorGame] = {
+            pcID: null,
+            name: null,
+            color: null,
+            isVIP: false
+        }
+        CG_DEFAULT_DATA[CG_WORLDS.ColorGame] = {
+            gameStarted: false,
+            playerList: [],
+            color: 'gray'
+        }
+        CG_VIEWS[CG_WORLDS.ColorGame] = {
+            youSure: () => {
+                clearBody();
+                setCurrentCGWorld(CG_WORLDS.ColorGame);
+                setCurrentCGWorldRoom(currentCGWorldRoom);
+
+                // Go Back to Game List
+                const buttonGameList = document.createElement('button');
+                buttonGameList.textContent = 'Go Back to Game List';
+                buttonGameList.addEventListener('click', () => {
+                    sendMessage(CG_WORLDS.ChummyGamesMenu,'leavingGame', {'currentWorld':currentCGWorld,'currentRoom':currentCGWorldRoom})
+                })
+                document.body.appendChild(buttonGameList);
+            },
+            waitRoom: () => {
+                clearBody();
+                setCurrentCGWorld(CG_WORLDS.ColorGame);
+                setCurrentCGWorldRoom(currentCGWorldRoom);
+                setCurrentView('waitRoom');
+
+                if(gameRoomData[CG_WORLDS.ColorGame][currentCGWorldRoom].gameStarted){
+                    CG_VIEWS[CG_WORLDS.ColorGame].main();
+                }
+
+                // Go Back to Game List
+                const buttonGameList = document.createElement('button');
+                buttonGameList.textContent = 'Go Back to Game List';
+                buttonGameList.addEventListener('click', () => {
+                    CG_VIEWS[CG_WORLDS.ChummyGamesMenu].main();
+                })
+                document.body.appendChild(buttonGameList);
+            },
+            main: () => {
+                clearBody();
+                setCurrentCGWorld(CG_WORLDS.ColorGame);
+                setCurrentCGWorldRoom(currentCGWorldRoom);
+                setCurrentView('main');
+
+                if(!gameRoomData[CG_WORLDS.ColorGame][currentCGWorldRoom].gameStarted){
+                    CG_VIEWS[CG_WORLDS.ColorGame].waitRoom();
+                }
+
+                // Go Back to Game List
+                const buttonGameList = document.createElement('button');
+                buttonGameList.textContent = 'Go Back to Game List';
+                buttonGameList.addEventListener('click', () => {
+                    CG_VIEWS[CG_WORLDS.ChummyGamesMenu].main();
+                })
+                document.body.appendChild(buttonGameList);
+
+                // Click to change color
+                const buttonChangeColor = document.createElement('button');
+                buttonGameList.textContent = 'Click To Change Color';
+                buttonGameList.addEventListener('click', () => {
+                    sendMessage(CG_WORLDS.ColorGame, 'requestToChangeColor')
+                })
+                document.body.appendChild(buttonGameList);
+            }
+        }
+        CG_MESSAGES[CG_WORLDS.ColorGame] = function (messageData){
+            // PLAYER to HOST
+            if (isHost && !messageData.isHost){
+                if(messageData.type === 'createRoom') {
+                    // Create room code
+                    let roomCode = createRoomCode(messageData.worldName);
+                    // Create defualt game data
+                    ChummyGamesData[messageData.worldName].rooms[newRoom] = deepCopy(CG_DEFAULT_DATA[messageData.worldName])
+                    // Get player defualt data
+                    let newPlayerData = deepCopy(CG_DEFAULT_PLAYER_DATA[messageData.worldName])
+                    newPlayerData.name = messageData.elements.name
+                    newPlayerData.pcID = messageData.pcID
+                    newPlayerData.isVIP = true
+                    // Send game room created
+                    sendMessage(messageData.worldName,'newRoom',{ 'toPCID': messageData.pcID,room:newRoom})
+                }
+            }
+            // HOST to PLAYER 
+            else if (!isHost && messageData.isHost){
+            }
+            
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script> // ChummyGamesMenu
+        // See Game List
+        // See Game Room List
+        CG_VIEWS[CG_WORLDS.ChummyGamesMenu] = {
+            main: ()=>{
+                clearBody();
+                setCurrentCGWorld(CG_WORLDS.ChummyGamesMenu);
+                setCurrentCGWorldRoom(null);
+                setCurrentView('main');
+
+                // Go to change name
+                const buttonChangeName = document.createElement('button');
+                buttonChangeName.textContent = 'Change Name';
+                buttonChangeName.addEventListener('click', () => {
+                    CG_VIEWS[CG_WORLDS.ChummyGamesMenu].changename();
+                })
+                document.body.appendChild(buttonChangeName);
+
+                // Play Color Game
+                const buttonPlayColorGame = document.createElement('button');
+                buttonPlayColorGame.textContent = 'Play ColorGame';
+                buttonPlayColorGame.addEventListener('click', () => {
+                    setCurrentCGWorld(CG_WORLDS.ColorGame);
+                    CG_VIEWS[CG_WORLDS.ChummyGamesMenu].rooms();
+                })
+                document.body.appendChild(buttonPlayColorGame);
+            },
+            changename:(passed = false, newName = null)=>{
+                clearBody();
+                setCurrentCGWorld(CG_WORLDS.ChummyGamesMenu);
+                setCurrentCGWorldRoom(null);
+                setCurrentView('changename');
+
+                // Go Back to Game List
+                const buttonGameList = document.createElement('button');
+                buttonGameList.textContent = 'Go Back to Game List';
+                buttonGameList.addEventListener('click', () => {
+                    CG_VIEWS[CG_WORLDS.ChummyGamesMenu].main();
+                })
+                document.body.appendChild(buttonGameList);
+
+                // Name input
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                if(newName !== null){
+                    if(passed){
+                        nameInput.placeholder = 'Your name changed to: '+ newName;
+                    }
+                    else{
+                        nameInput.placeholder = newName+': is already taken';
+                    }
+                }
+                else{
+                    nameInput.placeholder = 'Enter your name';
+                }
+                nameInput.id = 'changename-nameInput';
+                document.body.appendChild(nameInput);
+
+                // Enter Name button
+                const buttonEnterName = document.createElement('button');
+                buttonEnterName.textContent = 'Enter Name';
+                buttonEnterName.addEventListener('click',
+                    () => {
+                        const nameInput = document.getElementById('changename-nameInput');
+                        newName = nameInput.value.trim();
+                        if (!newName) {
+                            alert('Please enter your name first!');
+                            return;
+                        }
+                        else{
+                            myName = newName;
+                            sendMessage(CG_WORLDS.ChummyGamesMenu, 'newName', {name: newName});
+                        }
+                    })
+                document.body.appendChild(buttonEnterName);
+
+            },
+            rooms: ()=>{
+                clearBody();
+                // setCurrentCGWorld(CG_WORLDS.ChummyGamesMenu);
+                setCurrentCGWorldRoom(null);
+                setCurrentView('rooms');
+
+                // Go Back to Game List
+                const buttonGameList = document.createElement('button');
+                buttonGameList.textContent = 'Go Back to Game List';
+                buttonGameList.addEventListener('click', () => {
+                    CG_VIEWS[CG_WORLDS.ChummyGamesMenu].main();
+                })
+                document.body.appendChild(buttonGameList);
+
+                //Create Room Button
+                const buttonCreateRoom = document.createElement('button');
+                buttonCreateRoom.textContent = 'Create Room';
+                buttonCreateRoom.addEventListener('click',()=>{
+                    sendMessage(currentCGWorld, 'createRoom')
+                })
+                document.body.appendChild(buttonCreateRoom);
+                
+                // Room Buttons
+                Object.keys(obj).forEach(room =>{
+                    let gameRoomData = ChummyGamesData[messageData.elements.world].rooms[room]
+                    const buttonRoom = document.createElement('button');
+                    buttonRoom.textContent = `${room}: ${gameRoomData.gameStarted ?'In Progress':'Not Started'}: Number of Players - ${gameRoomData.playerList.length}`;
+                    buttonRoom.addEventListener('click', ()=>{
+                        setCurrentCGWorldRoom(this.textContent);
+                        CG_VIEWS[currentCGWorld].main();
+                    })
+                    document.body.appendChild(buttonRoom);
+                })
+            }
+        }
+        CG_MESSAGES[CG_WORLDS.ChummyGamesMenu] = function (messageData){
+            // PLAYER to HOST
+            if (isHost && !messageData.isHost){
+                if(messageData.type === 'newName') {
+                    let newName = messageData.elements.name;
+                    // Check if another PCID with the same NAME
+                    if(myconnections.some(c => c.metadata.pcID != messageData.pcID && c.name == newName && c.connStatus == CONNECTION_STATES.CONNECTED)){
+                        sendMessage(CG_WORLDS.ChummyGamesMenu,'nameInUse', {'toPCID': messageData.pcID, 'name': newName});
+                    }
+                    else{
+                        myconnections.find(c => c.conn.metadata.pcID === messageData.pcID).name = newName;
+                        sendMessage(CG_WORLDS.ChummyGamesMenu,'nameChanged', {'toPCID': messageData.pcID, 'name': newName});
+                    }
+                }
+                if(messageData.type === 'leavingGame') {
+
+                }
+            }
+            // HOST to PLAYER 
+            else if (!isHost && messageData.isHost){
+                if(messageData.type === 'newRoom') {
+                    // If player in rooms view - refresh
+                    if(myPCID == messageData.elements.toPCID){
+                        setCurrentCGWorldRoom(messageData.elements.room)
+                        CG_VIEWS[currentCGWorld].waitRoom();
+                    }
+                    else if(currentView == 'rooms' && currentCGWorld !== null && currentCGWorld in CG_VIEWS){
+                        CG_VIEWS[currentCGWorld].rooms();
+                    }
+                }
+                if(myPCID == messageData.elements.toPCID && messageData.type === 'nameInUse') {
+                    CG_VIEWS[CG_WORLDS.ChummyGamesMenu].main(false, messageData.elements.name);
+                }
+                if(myPCID == messageData.elements.toPCID && messageData.type === 'nameChanged') {
+                    setMyName(messageData.elements.name);
+                    CG_VIEWS[CG_WORLDS.ChummyGamesMenu].main(true, messageData.elements.name);
+                }
+            }
+            
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script> // ChummyGamesLogin
+        CG_VIEWS[CG_WORLDS.ChummyGamesLogin] = {
+            main: (oldName = null) => {
+                clearBody();
+                setCurrentCGWorld(CG_WORLDS.ChummyGamesLogin);
+                setCurrentCGWorldRoom(null);
+                setCurrentView('main');
+
+                // Main text
+                const maintext = document.createElement('div');
+                maintext.textContent = 'Chummy Games Login - v1.0';
+                document.body.appendChild(maintext);
+
+                // Name input
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                if(oldName !== null){
+                    nameInput.placeholder = oldName+' is already taken';
+                }
+                else{
+                    nameInput.placeholder = 'Enter your name';
+                }
+                nameInput.id = 'login-nameInput';
+                document.body.appendChild(nameInput);
+
+                // Enter Name button
+                const buttonEnterName = document.createElement('button');
+                buttonEnterName.textContent = 'Enter Name';
+                buttonEnterName.addEventListener('click',
+                    () => {
+                        const nameInput = document.getElementById('login-nameInput');
+                        newName = nameInput.value.trim();
+                        if (!newName) {
+                            alert('Please enter your name first!');
+                            return;
+                        }
+                        else{
+                            myName = newName;
+                            sendMessage(CG_WORLDS.ChummyGamesLogin,'newName', {name: newName});
+                        }
+                    })
+                document.body.appendChild(buttonEnterName);
+            }
+        }
+        CG_MESSAGES[CG_WORLDS.ChummyGamesLogin] = function (messageData){
+            // PLAYER to HOST
+            if (isHost && !messageData.isHost){
+                if(messageData.type === 'newName') {
+                    let newName = messageData.elements.name;
+                    // Check if another connection with the same NAME
+                    if(myconnections.some(c => c.name == newName && c.connStatus == CONNECTION_STATES.CONNECTED)){
+                        sendMessage(CG_WORLDS.ChummyGamesLogin,'nameInUse', {'toPCID': messageData.pcID, 'name': newName});
+                    }
+                    else{
+                        myconnections.find(c => c.conn.metadata.pcID === messageData.pcID).name = newName;
+                        sendMessage(CG_WORLDS.ChummyGamesLogin,'EnterChummyGame', {'toPCID': messageData.pcID});
+                    }
+                }
+            }
+            // HOST to PLAYER 
+            else if (!isHost && messageData.isHost){
+                if(myPCID == messageData.elements.toPCID && messageData.type == 'GoToLogin'){
+                    CG_VIEWS[CG_WORLDS.ChummyGamesLogin].main();
+                }
+                if(myPCID == messageData.elements.toPCID && messageData.type == 'nameInUse'){
+                    CG_VIEWS[CG_WORLDS.ChummyGamesLogin].main(messageData.elements.name);
+                }
+                if(myPCID == messageData.elements.toPCID && messageData.type == 'EnterChummyGame'){
+                    setMyName(myName);
+
+                    // If player was in login - send to Menu
+                    // If player was in Menu - send to Menu with specific room
+                    if(currentCGWorld == CG_WORLDS.ChummyGamesMenu || currentCGWorld == CG_WORLDS.ChummyGamesLogin) {
+                        if(currentView !== null && currentView in CG_VIEWS[CG_WORLDS.ChummyGamesMenu]){
+                            CG_VIEWS[CG_WORLDS.ChummyGamesMenu][currentView]();
+                        }
+                        else{
+                            CG_VIEWS[CG_WORLDS.ChummyGamesMenu].main();
+                        }
+                    }
+                    // If player was checking rooms for game
+                    else if(currentCGWorld !== null && currentCGWorld in CG_VIEWS && currentView == 'rooms'){
+                        CG_VIEWS[CG_WORLDS.ChummyGamesMenu].rooms();
+                    }
+                    // If player was in game
+                    else if(currentCGWorld !== null && currentCGWorld in ChummyGamesData){
+                        if(currentCGWorldRoom !== null && currentCGWorldRoom in ChummyGamesData[currentCGWorld].rooms){
+                            if(currentView !== null && currentView in CG_VIEWS[currentCGWorld]){
+                                CG_VIEWS[currentCGWorld][currentView]();
+                            }
+                            else if ('main' in CG_VIEWS[currentCGWorld]){
+                                CG_VIEWS[currentCGWorld].main();
+                            }
+                            else{
+                                CG_VIEWS[CG_WORLDS.ChummyGamesMenu].rooms();
+                            }
+                        }
+                        else{
+                            CG_VIEWS[CG_WORLDS.ChummyGamesMenu].rooms();
+                        }
+                    }
+                    //Else just send to menu
+                    else{
+                        CG_VIEWS[CG_WORLDS.ChummyGamesMenu].main();
+                    }
+                }
+            }
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script> // HeartBeatPingPong
+        function startHostToPlayerHeartbeat() {
+            myconnections.forEach(c => {c.lastPong = Date.now();});
+            // Send ping every 5 seconds
+            let pingInterval = setInterval(() => {
+                sendMessage(CG_WORLDS.HeartBeatPingPong, 'host-ping', );
+            }, 5000);
+            // Check if connection is dead every 2 seconds
+            let checkTimeout = setInterval(() => {
+                myconnections.forEach(c => {
+                    if (Date.now() - c.lastPong > 15000) {
+                        console.log("Host HeartBeat Disconnected PCID: "+c.metadata.pcID)
+                        c.connStatus = CONNECTION_STATES.DISCONNECTED;
+                    }
+                });
+            }, 2000);
+        }
+        function startPlayerToHostHeartbeat() {
+            lastPong = Date.now();
+            // Send ping every 5 seconds
+            let pingInterval = setInterval(() => {
+                sendMessage(CG_WORLDS.HeartBeatPingPong, 'player-ping',);
+            }, 5000);
+            // Check if connection is dead every 2 seconds
+            let checkTimeout = setInterval(() => {
+                if (Date.now() - lastPong > 15000) {
+                    console.log("Player HeartBeat Skipped a beat")
+                    location.reload();
+                }
+            }, 2000);
+        }
+        //---------------------------------
+        CG_MESSAGES['HeartBeatPingPong'] = function (messageData){
+            // PLAYER to HOST
+            if (isHost && !messageData.isHost){
+                if(messageData.type === 'player-ping') {
+                    sendMessage(CG_WORLDS.HeartBeatPingPong, 'host-pong', {'toPCID': messageData.pcID});
+                }
+                if(messageData.type === 'player-pong') {
+                    myconnections.forEach(c => {
+                        if(c.conn.metadata.pcID == messageData.pcID){
+                            c.lastPong = Date.now();
+                            if(c.connStatus == CONNECTION_STATES.DISCONNECTED){
+                                c.connStatus = CONNECTION_STATES.CONNECTED;
+                            }
+                        }
+                    });
+                }
+            }
+            // HOST to PLAYER 
+            else if (!isHost && messageData.isHost){
+                if(messageData.type === 'host-ping') {
+                    sendMessage(CG_WORLDS.HeartBeatPingPong, 'player-pong');
+                }
+                if(myPCID == messageData.elements.toPCID && messageData.type === 'host-pong') {
+                    lastPong = Date.now();
+                }
+            }
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+        //---------------------------------
+        const MY_PEER_CODE = 'ChummyGames';
+        let mypeer;
+        let myconnections = [];
+        let lastPong = Date.now();
+        let isHost = null;
+        let myName = null;
+        let myPCID = getCode(12);
+        //---------------------------------
+        let currentCGWorld = null;
+        let currentCGWorldRoom = null;
+        let currentView = null
+        //---------------------------------
+        function getCode(codeSize){
+            return Array.from({ length: codeSize }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]).join('');
+        }        
+        function creatRoomCode(worldName){
+            let newRoom = getCode(4);
+            if(newRoom in ChummyGamesData[worldName].rooms){
+                newRoom = getCode(4);
+            }
+        }
+        function setMyName(name){
+            myName = name;
+            localStorage.setItem('ChummyGames-NAME', myName);
+        }
+        function setCurrentCGWorld(cg_world){
+            currentCGWorld = cg_world;
+            localStorage.setItem('ChummyGames-currentCGWorld', currentCGWorld);
+        }
+        function setCurrentCGWorldRoom(room){
+            currentCGWorldRoom = room;
+            localStorage.setItem('ChummyGames-currentCGWorldRoom', currentCGWorldRoom);
+        }
+        function setCurrentView(newView){
+            currentView = newView;
+            localStorage.setItem('ChummyGames-currentView', currentView);
+        }
+        function handleLocalStorage(){
+            // Player PCID
+            if (localStorage.getItem('ChummyGames-PC-ID') !== null) {
+                let OLDmyPCID = localStorage.getItem('ChummyGames-PC-ID')
+                if(OLDmyPCID.length != 12 ){
+                    localStorage.setItem('ChummyGames-PC-ID', myPCID);
+                    console.log(`NEW PC ID: ${myPCID}`);
+                }
+                else{
+                    myPCID = OLDmyPCID;
+                    console.log(`Old PC ID: ${myPCID}`);
+                }
+            }
+            else{
+                localStorage.setItem('ChummyGames-PC-ID', myPCID);
+                console.log(`NEW PC ID: ${myPCID}`);
+            }
+            // Player Name
+            if (localStorage.getItem('ChummyGames-NAME') !== null) {
+                myName = localStorage.getItem('ChummyGames-NAME')
+                console.log(`Old NAME: ${myName}`);
+            }
+            // Player currentCGWorld
+            if (localStorage.getItem('ChummyGames-currentCGWorld') !== null) {
+                currentCGWorld = localStorage.getItem('ChummyGames-currentCGWorld')
+                console.log(`Old currentCGWorld: ${currentCGWorld}`);
+            }
+            // Player currentCGWorldRoom
+            if (localStorage.getItem('ChummyGames-currentCGWorldRoom') !== null) {
+                currentCGWorldRoom = localStorage.getItem('ChummyGames-currentCGWorldRoom')
+                console.log(`Old currentCGWorldRoom: ${currentCGWorldRoom}`);
+            }
+            // Player currentView
+            if (localStorage.getItem('ChummyGames-currentView') !== null) {
+                currentView = localStorage.getItem('ChummyGames-currentView')
+                console.log(`Old currentView: ${currentView}`);
+            }
+        }
+        function clearBody() {
+            const children = Array.from(document.body.children);
+            children.forEach(child => {
+                document.body.removeChild(child);
+            });
+        }
+        function sendMessage(worldName, type, elements={}) {
+            // Log if not heartbeat
+            if(worldName != CG_WORLDS.HeartBeatPingPong){
+                console.log(`SEND MESSAGE: ${worldName}: ${type}`,elements);
+            }
+            // Add message metadata
+            messageData = {}
+            messageData.worldName = worldName;
+            messageData.type = type;
+            messageData.isHost = isHost;
+            messageData.pcID = myPCID;
+            messageData.ChummyGamesData = ChummyGamesData;
+            messageData.elements = elements;
+            // Send message data
+            myconnections.forEach(c => {if(c.conn.open){c.conn.send(messageData);}});
+        }
+        function receiveMessage(messageData){
+            // Host to Player 
+            if (!isHost && messageData.isHost){
+                ChummyGamesData = messageData.ChummyGamesData;
+            }
+            // Log if not heartbeat
+            if(messageData.worldName != CG_WORLDS.HeartBeatPingPong){
+                console.log(`RECEIVED MESSAGE: ${messageData.worldName}: ${messageData.type}`,messageData);
+            }
+            // Handle message
+            CG_MESSAGES[messageData.worldName](messageData);
+        }
+        function deepCopy(original){
+            return JSON.parse(JSON.stringify(original));
+        }
+        //--------------------------------- 
+        function handleNewConnection(connection){
+            // Check if another connection for the same PCID
+            let foundPCID = false;
+            let hasName = false;
+            myconnections.forEach(c => {
+                if(c.conn.metadata.pcID == connection.metadata.pcID){
+                    foundPCID = true;
+                    c.conn.close();
+                    c.conn = connection;
+                    c.lastPong = Date.now();
+                    c.connStatus= CONNECTION_STATES.CONNECTED;
+                    if(c.name !== null){
+                        hasName = true;
+                    }
+                }
+            });
+            // New Connection, New PCID
+            if(!foundPCID){
+                 console.log("NEW CONNECTION WITH NEW PCID")
+                // New Connection, New PCID, HAS A NAME
+                if(connection.metadata.name !== null){
+                    console.log("NEW CONNECTION WITH NAME")
+                    // Check if another connection for the same NAME
+                    let foundName = false;
+                    let foundNameWithNewConn = false;
+                    myconnections.forEach(c => {
+                        if(c.name == connection.metadata.name){
+                            foundName = true;
+                            if(c.connStatus == CONNECTION_STATES.DISCONNECTED){
+                                foundNameWithNewConn = true;
+                                c.conn.close();
+                                c.conn = connection;
+                                c.lastPong = Date.now();
+                                c.connStatus= CONNECTION_STATES.CONNECTED;
+                            }
+                        }
+                    });
+                    // New connection, New PCID, with a name that is not currently in use in chummyGames - Can play game
+                    if(foundNameWithNewConn){
+                        sendMessage(CG_WORLDS.ChummyGamesLogin, 'EnterChummyGame', {'toPCID': connection.metadata.pcID});
+                    }
+                    // New connection, New PCID, with a name that is currently in use in chummyGames - Need to login
+                    else if(foundName && !foundNameWithNewConn){
+                        myconnections.push({conn: connection, lastPong: Date.now(), connStatus: CONNECTION_STATES.CONNECTED, name: null});
+                        sendMessage(CG_WORLDS.ChummyGamesLogin,'GoToLogin', {'toPCID': connection.metadata.pcID});
+                    }
+                    // New Connection, New PCID, with a name that is not in chummyGames - Need to login
+                    else if(!foundName){
+                        myconnections.push({conn: connection, lastPong: Date.now(), connStatus: CONNECTION_STATES.CONNECTED, name: null});
+                        sendMessage(CG_WORLDS.ChummyGamesLogin,'GoToLogin', {'toPCID': connection.metadata.pcID});
+                    }
+                }
+                // New Connection, New PCID, DOES NOT HAVE A NAME - Need to login
+                else{
+                    console.log("NEW CONNECTION WITHOUT NAME")
+                    myconnections.push({conn: connection, lastPong: Date.now(), connStatus: CONNECTION_STATES.CONNECTED, name: null});
+                    sendMessage(CG_WORLDS.ChummyGamesLogin,'GoToLogin', {'toPCID': connection.metadata.pcID});
+                }
+            }
+            // New Connection, OLD PCID, has no name - Can play game
+            else if(!hasName){
+                sendMessage(CG_WORLDS.ChummyGamesLogin,'GoToLogin', {'toPCID': connection.metadata.pcID});
+            }
+            // New Connection, OLD PCID, has name - Can play game
+            else if(hasName){
+                sendMessage(CG_WORLDS.ChummyGamesLogin,'EnterChummyGame', {'toPCID': connection.metadata.pcID});
+            }
+        }
+        function handleHost() {
+            mypeer = new Peer(MY_PEER_CODE);
+            // True Host
+            mypeer.on('open', (id) => {
+                console.log("Host-Open: With ID - "+id);
+                isHost = true;
+                startHostToPlayerHeartbeat();
+            }); 
+            // Triggered if a player is connecting 
+            mypeer.on('connection', function (connection) {
+                console.log("Host-Connection: With PCID - "+connection.metadata.pcID+": With PEER - "+connection.peer);
+                // Triggered when player is fully connected
+                connection.on('open', (messageData) => {console.log("Host-Connection-open");handleNewConnection(connection);}); 
+                // Triggered if a player is trying to send a message
+                connection.on('data', (messageData) => {receiveMessage(messageData);}); 
+                // Triggered if player connection failed
+                connection.on('close', () => {
+                    console.log("Host-Connection-Close");
+                    myconnections.forEach(c => {
+                        if(c.conn.metadata.pcID == connection.metadata.pcID){
+                            c.connStatus = CONNECTION_STATES.DISCONNECTED;
+                        }
+                    });
+                });
+            });
+            // Triggered if there is already a host or something new happend
+            mypeer.on('error', (err) => {console.log("Host-Error");});
+        }
+        function handleJoin() {
+            isHost = false;
+            mypeer = new Peer();
+            // My random connection is created
+            mypeer.on('open', (id) => { 
+                console.log("Join-Open: With ID - "+id);
+                const connection = mypeer.connect(MY_PEER_CODE, { metadata: { pcID: myPCID, name: myName }});
+                myconnections.push({conn:connection});
+                 // Successfully connected with host
+                connection.on('open', () => {console.log("Join-Open-Open: With PEER - "+connection.peer);startPlayerToHostHeartbeat();});
+                // Message from player or host
+                connection.on('data', (messageData) => {receiveMessage(messageData);}); 
+                // Host connection failed or my connection failed
+                connection.on('close', () => {console.log("Join-Open-Close")}); 
+                // Error while connected to host
+                connection.on('error', (err) => {console.log("Join-Open-Error")}); 
+            });
+            // Error before connecting to host
+            mypeer.on('error', (err) => {console.log("Join-Error")});
+        }
+        //---------------------------------
+        function bootup(){
+
+            handleLocalStorage();
+
+            if (window.location.pathname.endsWith('/host')) {
+                console.log("URL indicates HOST mode");
+                handleHost();
+            } 
+            else if (window.location.hash === '#host') {
+                console.log("URL indicates HOST mode");
+                handleHost();
+            }
+            else {
+                console.log("URL indicates JOIN mode");
+                handleJoin();
+            }
+        }
+        bootup()  
+    
+    
+
+        // Host Connect
+        // Join Connect
+        // Cache PCID and PlayerName
+        // Disconnect Window Reset
+        // Heartbeat connection check
+
+
+        // Connection - PCID - PlayerName
+        // S/S/S Good
+        // S/S/D **WEIRD** (Diff Name same connection) Shouldnt be able to do anything - maybe close connection 
+        // S/D/S **WEIRD** (Diff PCID same connection) Shouldnt be able to do anything - maybe close connection 
+        // S/D/D **WEIRD** (Diff Name/PCID same connection) Shouldnt be able to do anything - maybe close connection 
+        // D/S/S **NORMAL** Close old connection -> Update connection based on PCID
+        // D/S/D **WEIRD** (Diff Name/connection same PCID) Close old connection -> Update connection based on PCID -> Update different name
+        // D/D/S **NORMAL** If Name is with a live connection (Prompt new login name) else (Close old connection -> Update connection and PCID based on name)
+        // D/D/D New Player
+
+        // D/*/* Checked in new connection to host
+
+
+
+
+
+
+
+
+
+
+
+        // Bootup
+        // Get OR create PCID
+        // Get Name, World, Room, View
+        // Create Connection
+        // Host Checks if this PCID was already in 
+        // Host Checks if this NAME was already in (Else asks you to login)
+        // Player can now select Game (if game was not already set)
+        // Player can now select or create game room (if game room was not already set)
+    </script>
+</body>
+</html>
