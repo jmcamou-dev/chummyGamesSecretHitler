@@ -121,13 +121,12 @@
             [1, 'Party_Leader', 'Party_Leader', 'Thief', 'Party_Leader/The_Shadow_Claw.png',['Once per turn may pull card for 1 action point']]
             ]
 
-        var game_cards_dict = {}
+        var game_cards_dict = []
         var cardID = 0;
-        function create_game_cards_dict(){
-        game_cards_dict = {}
         game_cards.forEach(card => {
+            cardID+=1;
             card_name = card[4].split('/')[card[4].split('/').length-1].split('.')[0]
-            game_cards_dict[card_name] = {
+            game_cards_dict.push( {
             'name': card_name,
             'count': card[0],
             'deck': card[1],
@@ -135,10 +134,14 @@
             'class': card[3],
             'src': card[4],
             'mods': card[5],
-            'item': null
-            }
+            'size': [
+                600,
+                card[1] == 'Party_Leader' || card[1] == 'Monster' ? 1036 : 840
+            ],
+            'item': null,
+            'id': cardID
+            })
         });
-        }
         let gameConstants={
             cardImages: [
                 'images\\Card_Back.png',
@@ -380,6 +383,36 @@
         }
     </script>
     <script> 
+        let textBuff = 20;
+        let imgBuff = 10;
+        function spreadDeck(deck, x, y,sizeP, clickFunc=()=>{}){
+            deck.forEach(c=>{
+                addImage(c,x,y,sizeP, clickFunc);
+                x+=(c.size[0]+imgBuff)*sizeP
+            })
+        }
+        function addImage(card, x, y, sizeP, clickFunc=()=>{}){
+            let img = document.createElement("img")
+            img.src = `images\\${card.src}`;
+            img.width = card.size[0]*sizeP;   
+            img.height = card.size[1]*sizeP; ; 
+            img.style.position = 'absolute';
+            img.style.top = y+'px';  
+            img.style.left = x+'px';
+            document.body.appendChild(img)
+            img.addEventListener('click', clickFunc)
+            return img;
+        }
+        function addText(x,y,text, clickFunc=()=>{}){
+            let myDiv = document.createElement("div");
+            myDiv.innerHTML = text;
+            myDiv.style.position = 'absolute';
+            myDiv.style.top = y+'px';
+            myDiv.style.left = x+'px';
+            document.body.appendChild(myDiv)
+            myDiv.addEventListener('click', clickFunc)
+            return myDiv
+        }
         const GameViewTitles = {
             main: 'main',
             changeName: 'changeName',
@@ -503,28 +536,39 @@
                     clearBody();
                     setCurrentView(thisView);
                     let myPlayerData = getPlayerDataByPCID(myPCID);
+                    
+                    let x = 10;
+                    let y = 10;
 
-                    let myDiv = document.createElement("div");
-                    myDiv.innerHTML = `<p>Your are: ${myPlayerData.name}</p>`;
-                    myDiv.addEventListener('click', ()=>{ GameViews.changeName(true); })
-                    document.body.appendChild(myDiv)
+                    let myDiv = addText(x,y,`Your are: ${myPlayerData.name}`,()=>{ GameViews.changeName(true);});
 
-                    let playersDiv = document.createElement("div");
-                    playersDiv.innerHTML = `Turn: ${ChummyGamesData.players.find(p => p.turn).name}`;
+                    y+=textBuff;
+                    myDiv = addText(x,y,`Turn: ${ChummyGamesData.players.find(p => p.turn).name}`);
+
+                    y+=textBuff;
+                    myDiv = addText(x,y,`----------------------------------------`);
+
                     ChummyGamesData.players.forEach(p => {
-                        playersDiv.innerHTML += `<p>${p.name}: ${p.code}</p>`;
-                    })
-                    document.body.appendChild(playersDiv)
+                        y+=textBuff;
+                        myDiv = addText(x,y,`${p.name}:`);
+                        y+=textBuff;
+                        myDiv = addText(x,y,`* Party: ${p.partyDeck.length == 0 ? 'Empty' : ''}`);
+                        if(p.partyDeck.length != 0){
+                            y+=textBuff;
+                            spreadDeck(p.partyDeck, x, y, .25)
+                            y+=(p.partyDeck[0].size[1]+imgBuff)*.25
+                        }
+                        y+=textBuff;
+                        myDiv = addText(x,y,`* Hand: ${p.handDeck.length == 0 ? 'Empty' : ''}`);
+                        if(p.handDeck.length != 0){
+                            y+=textBuff;
+                            spreadDeck(p.handDeck, x, y, .25)
+                            y+=(p.handDeck[0].size[1]+imgBuff)*.25
+                        }
 
-                    let cardImage = document.createElement("img")
-                    cardImage.src  = gameConstants.cardImages[0]
-                    document.body.appendChild(cardImage)
-                    cardImage = document.createElement("img")
-                    cardImage.src  = gameConstants.cardImages[1]
-                    document.body.appendChild(cardImage)
-                    cardImage = document.createElement("img")
-                    cardImage.src  = gameConstants.cardImages[5]
-                    document.body.appendChild(cardImage)
+                        y+=textBuff;
+                        myDiv = addText(x,y,`----------------------------------------`);
+                    })
                 }
             }
         }
@@ -532,15 +576,55 @@
 
 
     <script> // MESSAGES
+        let cardsPerPlayer = 5;
         function setUpNewGameData(){
+            // Set up Decks:
+            ChummyGamesData['decks'] = {
+                mainDeck:[],
+                discardDeck: [],
+                monsterDeck:[],
+                partyLeaderDeck: []
+            }
+            game_cards_dict.forEach(c => {
+                if(c.deck == 'Deck'){
+                    for(var i = 0; i < c.count; i++){
+                        ChummyGamesData['decks'].mainDeck.push(c)
+                    }
+                }
+                if(c.deck == 'Monster'){
+                    for(var i = 0; i < c.count; i++){
+                        ChummyGamesData['decks'].monsterDeck.push(c)
+                    }
+                }
+                if(c.deck == 'Party_Leader'){
+                    for(var i = 0; i < c.count; i++){
+                        ChummyGamesData['decks'].partyLeaderDeck.push(c)
+                    }
+                }
+            })
+            ChummyGamesData['decks'].mainDeck = shuffleArray(ChummyGamesData['decks'].mainDeck);
+            ChummyGamesData['decks'].monsterDeck = shuffleArray(ChummyGamesData['decks'].monsterDeck);
+            ChummyGamesData['decks'].partyLeaderDeck = shuffleArray(ChummyGamesData['decks'].partyLeaderDeck);
+            
+
+            // Set up first trun:
             let pcIDList = []
             ChummyGamesData.players.forEach(p => {pcIDList.push(p.pcID)})
             shuffleArray(pcIDList)
+
+            // Set up Player data:
             ChummyGamesData.players.forEach(p => {
                 p['code'] = getCode(10);
                 p['turn'] = false;
                 if(p.pcID == pcIDList[0])
                     p['turn'] = true;
+
+                p['handDeck'] = [];
+                p['partyDeck'] = [];
+
+                for(var i = 0; i < cardsPerPlayer; i++){
+                    p.handDeck.push(ChummyGamesData.decks.mainDeck.pop())
+                }
             })
         }
         // messageData ~ type | isHost | pcID | ChummyGamesData | elements
@@ -679,7 +763,7 @@
     </script>
     <script> // PC Data
         //---------------------------------
-        const MY_PEER_CODE = 'ChummyGames_Slay';
+        const MY_PEER_CODE = 'ChummyGames_Slay12';
         let mypeer;
         let myconnections = [];
         let isHost = null;
@@ -711,6 +795,7 @@
             sendMessage('EnterChummyGame', {'toPCID': connection.metadata.pcID});
         }
         function handleHost() {
+            console.log("Host: Connecting to - "+MY_PEER_CODE);
             mypeer = new Peer(MY_PEER_CODE);
             // True Host
             mypeer.on('open', (id) => {
@@ -735,9 +820,10 @@
                 });
             });
             // Triggered if there is already a host or something new happend
-            mypeer.on('error', (err) => {console.log("Host-Error");});
+            mypeer.on('error', (err) => {console.log("Host-Error", err);});
         }
         function handleJoin() {
+            console.log("Join: Connecting to - "+MY_PEER_CODE);
             isHost = false;
             mypeer = new Peer();
             // My random connection is created
@@ -752,10 +838,10 @@
                 // Host connection failed or my connection failed
                 connection.on('close', () => {console.log("Join-Open-Close")}); 
                 // Error while connected to host
-                connection.on('error', (err) => {console.log("Join-Open-Error")}); 
+                connection.on('error', (err) => {console.log("Join-Open-Error",err)}); 
             });
             // Error before connecting to host
-            mypeer.on('error', (err) => {console.log("Join-Error")});
+            mypeer.on('error', (err) => {console.log("Join-Error", err)});
         }
     </script>
     <script> // Handle Local Storage
