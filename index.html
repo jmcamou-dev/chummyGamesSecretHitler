@@ -7,246 +7,42 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
 </head>
 <body>
-    <script> // Game Constants and Setup
-        let gameConstants={
-            cards: [
-                'images\Card_Back.png',
-                'images\logo.png',
-                'images\logo_no_back.png',
-                'images\Monster_Card_Back.png',
-                'images\Special_Card_Back.png',
-                'images\Cursed_Items\Curse_of_the_Snake\'s_Eyes.png',
-                'images\Cursed_Items\Sealing_Key.png',
-                'images\Cursed_Items\Suspiciously_Shiny_Coin.png',
-                'images\Hero-Bard\Dodgy_Dealer.png',
-                'images\Hero-Bard\Fuzzy_Cheeks.png',
-                'images\Hero-Bard\Greedy_Cheeks.png',
-                'images\Hero-Bard\Lucky_Bucky.png',
-                'images\Hero-Bard\Mellow_Dee.png',
-                'images\Hero-Bard\Napping_Nibbles.png',
-                'images\Hero-Bard\Peanut.png',
-                'images\Hero-Bard\Tipsy_Tootie.png',
-                'images\Hero-Fighter\Bad_Axe.png',
-                'images\Hero-Fighter\Beary_Wise.png',
-                'images\Hero-Fighter\Bear_Claw.png',
-                'images\Hero-Fighter\Fury_Knuckle.png',
-                'images\Hero-Fighter\Heavy_Bear.png',
-                'images\Hero-Fighter\Pan_Chucks.png',
-                'images\Hero-Fighter\Qi_Bear.png',
-                'images\Hero-Fighter\Tough_Teddy.png',
-                'images\Hero-Guardian\Calming_Voice.png',
-                'images\Hero-Guardian\Guiding_Light.png',
-                'images\Hero-Guardian\Holy_Curselifter.png',
-                'images\Hero-Guardian\Iron_Resolve.png',
-                'images\Hero-Guardian\Mighty_Blade.png',
-                'images\Hero-Guardian\Radiant_Horn.png',
-                'images\Hero-Guardian\Vibrant_Glow.png',
-                'images\Hero-Guardian\Wise_Shield.png',
-                'images\Hero-Ranger\Bullseye.png',
-                'images\Hero-Ranger\Hook.png',
-                'images\Hero-Ranger\Lookie_Rookie.png',
-                'images\Hero-Ranger\Quick_Draw.png',
-                'images\Hero-Ranger\Serious_Grey.png',
-                'images\Hero-Ranger\Sharp_Fox.png',
-                'images\Hero-Ranger\Wildshot.png',
-                'images\Hero-Ranger\Wily_Red.png',
-                'images\Hero-Thief\Kit_Napper.png',
-                'images\Hero-Thief\Meowzio.png',
-                'images\Hero-Thief\Plundering_Puma.png',
-                'images\Hero-Thief\Shurikitty.png',
-                'images\Hero-Thief\Silent_Shadow.png',
-                'images\Hero-Thief\Slippery_Paws.png',
-                'images\Hero-Thief\Sly_Pickings.png',
-                'images\Hero-Thief\Smooth_Mimimeow.png',
-                'images\Hero-Wizard\Bun_Bun.png',
-                'images\Hero-Wizard\Buttons.png',
-                'images\Hero-Wizard\Fluffy.png',
-                'images\Hero-Wizard\Hopper.png',
-                'images\Hero-Wizard\Snowball.png',
-                'images\Hero-Wizard\Spooky.png',
-                'images\Hero-Wizard\Whiskers.png',
-                'images\Hero-Wizard\Wiggles.png',
-                'images\Items\Bard_Mask.png',
-                'images\Items\Decoy_Doll.png',
-                'images\Items\Fighter_Mask.png',
-                'images\Items\Guardian_Mask.png',
-                'images\Items\Particularly_Rusty_Coin.png',
-                'images\Items\Ranger_Mask.png',
-                'images\Items\Really_Big_Ring.png',
-                'images\Items\Thief_Mask.png',
-                'images\Items\Wizard_Mask.png',
-                'images\Magic\Call_to_the_Fallen.png',
-                'images\Magic\Critical_Boost.png',
-                'images\Magic\Destructive_Spell.png',
-                'images\Magic\Enchanted_Spell.png',
-                'images\Magic\Entangling_Trap.png',
-                'images\Magic\Forced_Exchange.png',
-                'images\Magic\Forceful_Winds.png',
-                'images\Magic\Winds_of_Change.png',
-                'images\main_cards\card_1.png',
-                'images\main_cards\card_2.png',
-                'images\main_cards\card_3.png',
-                'images\main_cards\card_4.png',
-                'images\main_cards\card_5.png',
-                'images\main_cards\default.png',
-                'images\main_cards\Forced_Exchange.png',
-                'images\main_cards\Forceful_Winds.png',
-                'images\Modifiers\Modifier_0i4.png',
-                'images\Modifiers\Modifier_1i3.png',
-                'images\Modifiers\Modifier_2i2.png',
-                'images\Modifiers\Modifier_3i1.png',
-                'images\Modifiers\Modifier_4i0.png',
-                'images\Monster\Abyss_Queen.png',
-                'images\Monster\Anuran_Cauldron.png',
-                'images\Monster\Artic_Aries.png',
-                'images\Monster\Bloodwing.png',
-                'images\Monster\Corrupted_Sabretooth.png',
-                'images\Monster\Crowned_Serpent.png',
-                'images\Monster\Dark_Dragon_King.png',
-                'images\Monster\Dracos.png',
-                'images\Monster\Malamammoth.png',
-                'images\Monster\Mega_Slime.png',
-                'images\Monster\Orthus.png',
-                'images\Monster\Rex_Major.png',
-                'images\Monster\Terratuga.png',
-                'images\Monster\Titan_Wyvern.png',
-                'images\Monster\Warworn_Owlbear.png',
-                'images\Other\Challenge.png',
-                'images\Other\Rule_Card.png',
-                'images\Other\Rule_Card_Back.png',
-                'images\Party_Leader\The_Charismatic_Song.png',
-                'images\Party_Leader\The_Cloaked_Sage.png',
-                'images\Party_Leader\The_Divine_Arrow.png',
-                'images\Party_Leader\The_Fist_of_Reason.png',
-                'images\Party_Leader\The_Protecting_Horn.png',
-                'images\Party_Leader\The_Shadow_Claw.png',
-                'images\special_cards\default.png',
-                'images\special_cards\special_1.png',
-                'images\special_cards\special_2.png',
-                'images\special_cards\special_3.png',
-                'images\special_cards\special_4.png',
-                'images\special_cards\special_5.png'
-            ]
+    <script> 
+        const GameViewTitles = {
+            main: 'main'
         }
-        function gameSetUp(){
-            ChummyGamesData['Color'] = shuffleArray(gameConstants.colors)[0];
+        const GameViews = {
+            main: (setThisView = true)=>{
+                if(setThisView || currentView == GameViewTitles.main){
+                    clearBody();
+                    setCurrentView(GameViewTitles.main);
+
+                    let myDiv = document.createElement("div");
+                    myDiv.innerHTML = `<p>${myPCID}</p>`;
+                    document.body.appendChild(myDiv)   
+
+                    const bt = document.createElement('button');
+                    bt.textContent = "Host"
+                    document.body.appendChild(bt)
+                }           
+            }
         }
     </script>
-    <script> // Views
-        let CG_VIEWS = {
-            Login:'Login',
-            Game:'Game'
-        }
-        function GoToGame(){
-            createView_Game();
-        }
-        function createView_Login(oldName=null){
-            clearBody();
-            setCurrentView(CG_VIEWS.Login);
 
-            // Main text
-            const maintext = document.createElement('div');
-            maintext.textContent = 'Chummy Games Login - v1.0';
-            document.body.appendChild(maintext);
 
-            // Name input
-            const nameInput = document.createElement('input');
-            nameInput.type = 'text';
-            if(oldName !== null){
-                nameInput.placeholder = oldName+' is already taken';
-            }
-            else{
-                nameInput.placeholder = 'Enter your name';
-            }
-            nameInput.id = 'login-nameInput';
-            document.body.appendChild(nameInput);
-
-            // Enter Name button
-            const buttonEnterName = document.createElement('button');
-            buttonEnterName.textContent = 'Enter Name';
-            buttonEnterName.addEventListener('click',
-                () => {
-                    const nameInput = document.getElementById('login-nameInput');
-                    newName = nameInput.value.trim();
-                    if (!newName) {
-                        alert('Please enter your name first!');
-                        return;
-                    }
-                    else{
-                        myName = newName;
-                        sendMessage('newName', {name: newName});
-                    }
-                })
-            document.body.appendChild(buttonEnterName);
-        }
-        function createView_Game(){
-            setCurrentView(CG_VIEWS.Game);
-            const redSquare = document.createElement('div');
-            redSquare.id = 'redSquare';
-            redSquare.textContent = 'Click Me!';
-            document.body.appendChild(redSquare);
-
-            // Apply styles to the red square
-            const styles = `
-            #redSquare {
-                width: 100px;
-                height: 100px;
-                background-color: red;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: pointer;
-            }
-            `;
-            
-            const styleSheet = document.createElement('style');
-            styleSheet.type = 'text/css';
-            styleSheet.innerText = styles;
-            document.head.appendChild(styleSheet);
-
-            // Add click event listener
-            redSquare.addEventListener('click', () => {
-                alert('Red square clicked!');
-            });
-        }
-    </script>
     <script> // MESSAGES
-        // messageData ~ type | isHost | pcID | name | ChummyGamesData | elements
+        // messageData ~ type | isHost | pcID | ChummyGamesData | elements
         function handleHostToPlayerMessage(messageData){
-            if(messageData,type == 'GoToLogin'){
-                createView_Login();
-            }
-            if(messageData,type == 'nameInUse'){
-                createView_Login(messageData.elements.name);
-            }
             if(messageData,type == 'EnterChummyGame'){
-                GoToGame();
+                if(myPCID == messageData.elements.toPCID){
+                    setCurrentView(GameViewTitles.main)
+                }
+                GameViews.main(false);
             }
         }
         function handlePlayerToHostMessage(messageData){
-            if(messageData,type == 'newName'){
-                let newName = messageData.elements.name;
-                // Check if another connection with the same NAME
-                if(myconnections.some(c => c.name == newName && c.connStatus == CONNECTION_STATES.CONNECTED)){
-                    sendMessage('nameInUse', {'toPCID': messageData.pcID, 'name': newName});
-                }
-                else{
-                    myconnections.find(c => c.conn.metadata.pcID === messageData.pcID).name = newName;
-                    sendMessage('EnterChummyGame', {'toPCID': messageData.pcID});
-                }
-            }
         }
     </script>
-
-
-
-
-
-
-
-
-
-
     <script> // Functions
         function shuffleArray(lst) {
             for (let i = lst.length - 1; i > 0; i--) {
@@ -275,7 +71,6 @@
             messageData.type = type;
             messageData.isHost = isHost;
             messageData.pcID = myPCID;
-            messageData.name = myName;
             if(isHost){messageData.ChummyGamesData = ChummyGamesData;}
             else{messageData.ChummyGamesData = {};}
             messageData.elements = elements;
@@ -309,7 +104,6 @@
         let mypeer;
         let myconnections = [];
         let isHost = null;
-        let myName = null;
         let myPCID = null;
         //---------------------------------
         let currentView = null
@@ -320,68 +114,18 @@
         function handleNewConnection(connection){
             // Check if another connection for the same PCID
             let foundPCID = false;
-            let hasName = false;
             myconnections.forEach(c => {
                 if(c.conn.metadata.pcID == connection.metadata.pcID){
                     foundPCID = true;
                     c.conn.close();
                     c.conn = connection;
                     c.connStatus= CONNECTION_STATES.CONNECTED;
-                    if(c.name !== null){
-                        hasName = true;
-                    }
                 }
             });
-            // New Connection, New PCID
             if(!foundPCID){
-                 console.log("NEW CONNECTION WITH NEW PCID")
-                // New Connection, New PCID, HAS A NAME
-                if(connection.metadata.name !== null){
-                    console.log("NEW CONNECTION WITH NAME")
-                    // Check if another connection for the same NAME
-                    let foundName = false;
-                    let foundNameWithNewConn = false;
-                    myconnections.forEach(c => {
-                        if(c.name == connection.metadata.name){
-                            foundName = true;
-                            if(c.connStatus == CONNECTION_STATES.DISCONNECTED){
-                                foundNameWithNewConn = true;
-                                c.conn.close();
-                                c.conn = connection;
-                                c.connStatus= CONNECTION_STATES.CONNECTED;
-                            }
-                        }
-                    });
-                    // New connection, New PCID, with a name that is not currently in use in chummyGames - Can play game
-                    if(foundNameWithNewConn){
-                        sendMessage('EnterChummyGame', {'toPCID': connection.metadata.pcID});
-                    }
-                    // New connection, New PCID, with a name that is currently in use in chummyGames - Need to login
-                    else if(foundName && !foundNameWithNewConn){
-                        myconnections.push({conn: connection, connStatus: CONNECTION_STATES.CONNECTED, name: null});
-                        sendMessage('GoToLogin', {'toPCID': connection.metadata.pcID});
-                    }
-                    // New Connection, New PCID, with a name that is not in chummyGames - Need to login
-                    else if(!foundName){
-                        myconnections.push({conn: connection, connStatus: CONNECTION_STATES.CONNECTED, name: null});
-                        sendMessage('GoToLogin', {'toPCID': connection.metadata.pcID});
-                    }
-                }
-                // New Connection, New PCID, DOES NOT HAVE A NAME - Need to login
-                else{
-                    console.log("NEW CONNECTION WITHOUT NAME")
-                    myconnections.push({conn: connection, connStatus: CONNECTION_STATES.CONNECTED, name: null});
-                    sendMessage('GoToLogin', {'toPCID': connection.metadata.pcID});
-                }
+                myconnections.push({conn: connection, connStatus: CONNECTION_STATES.CONNECTED});
             }
-            // New Connection, OLD PCID, has no name - Need to login
-            else if(!hasName){
-                sendMessage('GoToLogin', {'toPCID': connection.metadata.pcID});
-            }
-            // New Connection, OLD PCID, has name - Can play game
-            else if(hasName){
-                sendMessage('EnterChummyGame', {'toPCID': connection.metadata.pcID});
-            }
+            sendMessage('EnterChummyGame', {'toPCID': connection.metadata.pcID});
         }
         function handleHost() {
             mypeer = new Peer(MY_PEER_CODE);
@@ -393,6 +137,7 @@
             // Triggered if a player is connecting 
             mypeer.on('connection', function (connection) {
                 console.log("Host-Connection: With PCID - "+connection.metadata.pcID+": With PEER - "+connection.peer);
+                createView_Login();
                 // Triggered when player is fully connected
                 connection.on('open', (messageData) => {console.log("Host-Connection-open");handleNewConnection(connection);}); 
                 // Triggered if a player is trying to send a message
@@ -416,7 +161,7 @@
             // My random connection is created
             mypeer.on('open', (id) => { 
                 console.log("Join-Open: With ID - "+id);
-                const connection = mypeer.connect(MY_PEER_CODE, { metadata: { pcID: myPCID, name: myName }});
+                const connection = mypeer.connect(MY_PEER_CODE, { metadata: { pcID: myPCID }});
                 myconnections.push({conn:connection});
                  // Successfully connected with host
                 connection.on('open', () => {console.log("Join-Open-Open: With PEER - "+connection.peer);});
@@ -432,10 +177,6 @@
         }
     </script>
     <script> // Handle Local Storage
-        function setMyName(name){
-            myName = name;
-            localStorage.setItem('ChummyGames-NAME', myName);
-        }
         function setCurrentView(newView){
             currentView = newView;
             localStorage.setItem('ChummyGames-currentView', currentView);
@@ -458,11 +199,6 @@
                 localStorage.setItem('ChummyGames-PC-ID', myPCID);
                 console.log(`NEW PC ID: ${myPCID}`);
             }
-            // Player Name
-            if (localStorage.getItem('ChummyGames-NAME') !== null) {
-                myName = localStorage.getItem('ChummyGames-NAME')
-                console.log(`Old NAME: ${myName}`);
-            }
             // Player currentView
             if (localStorage.getItem('ChummyGames-currentView') !== null) {
                 currentView = localStorage.getItem('ChummyGames-currentView')
@@ -471,7 +207,6 @@
         }
     </script>
     <script> //bootup
-        //---------------------------------
         function bootup(){
 
             handleLocalStorage();
