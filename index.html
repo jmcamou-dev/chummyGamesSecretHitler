@@ -8,6 +8,137 @@
 </head>
 <body>
     <script> // Game Constants and Setup
+        // CARDS --------------------------------------------------------------------------------
+        var game_cards = [
+            [2, 'Deck', 'Cursed_Items', 'None', "Cursed_Items/Curse_of_the_Snake's_Eyes.png",['MOD_HERO_ROLL_TRY_N2']],
+            [1, 'Deck', 'Cursed_Items', 'None', 'Cursed_Items/Sealing_Key.png',['MOD_HERO_ROLL_TRY_CANNOT']],
+            [1, 'Deck', 'Cursed_Items', 'None', 'Cursed_Items/Suspiciously_Shiny_Coin.png',['MOD_HERO_ROLL_SUCCESS_DISCARD']],
+            
+            [1, 'Deck', 'Hero', 'Bard', 'Hero-Bard/Dodgy_Dealer.png',['CHOOSE_OTHER_PLAYER^TRADE_HAND']],
+            [1, 'Deck', 'Hero', 'Bard', 'Hero-Bard/Fuzzy_Cheeks.png',['DRAW^MAY_PLAY_HAND_HERO']],
+            [1, 'Deck', 'Hero', 'Bard', 'Hero-Bard/Greedy_Cheeks.png',['OTHERS_GIVECARD']],
+            [1, 'Deck', 'Hero', 'Bard', 'Hero-Bard/Lucky_Bucky.png',['CHOOSE_OTHER_PLAYER^PULL_HAND^IF_HERO^MAY_PLAY_THIS']],
+            [1, 'Deck', 'Hero', 'Bard', 'Hero-Bard/Mellow_Dee.png',['DRAW^IF_HERO^MAY_PLAY_THIS']],
+            [1, 'Deck', 'Hero', 'Bard', 'Hero-Bard/Napping_Nibbles.png',['DO_NOTHING']],
+            [1, 'Deck', 'Hero', 'Bard', 'Hero-Bard/Peanut.png',['DRAW^DRAW']],
+            [1, 'Deck', 'Hero', 'Bard', 'Hero-Bard/Tipsy_Tootie.png',['CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^TRADE_THIS_HERO']],
+            
+            [1, 'Deck', 'Hero', 'Fighter', 'Hero-Fighter/Bad_Axe.png',['CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY']],
+            [1, 'Deck', 'Hero', 'Fighter', 'Hero-Fighter/Beary_Wise.png',['CHOOSE_OTHER_PLAYER^PULL_HAND^IF_HERO^PULL_HAND']],
+            [1, 'Deck', 'Hero', 'Fighter', 'Hero-Fighter/Bear_Claw.png',['OTHERS_DISCARD_IN_LIST^CHOOSE_FROM_LIST']],
+            [1, 'Deck', 'Hero', 'Fighter', 'Hero-Fighter/Fury_Knuckle.png',['CHOOSE_OTHER_PLAYER^PULL_HAND^IF_CHALLENGE^PULL_HAND']],
+            [1, 'Deck', 'Hero', 'Fighter', 'Hero-Fighter/Heavy_Bear.png',['CHOOSE_OTHER_PLAYER^PLAYER_DISCARD^PLAYER_DISCARD']],
+            [1, 'Deck', 'Hero', 'Fighter', 'Hero-Fighter/Pan_Chucks.png',['DRAW_TO_LIST^DRAW_TO_LIST^IF_CHALLENGE_IN_LIST^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY']],
+            [1, 'Deck', 'Hero', 'Fighter', 'Hero-Fighter/Qi_Bear.png',['MAY_DISCARD^IF_DISCARD^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY^MAY_DISCARD^IF_DISCARD^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY^MAY_DISCARD^IF_DISCARD^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY']],
+            [1, 'Deck', 'Hero', 'Fighter', 'Hero-Fighter/Tough_Teddy.png',['FIGHTER_OTHERS_DISCARD']],
+            
+            [1, 'Deck', 'Hero', 'Guardian', 'Hero-Guardian/Calming_Voice.png',['MOD_HERO_STEAL_CANNOT_NEXTTURN']],
+            [1, 'Deck', 'Hero', 'Guardian', 'Hero-Guardian/Guiding_Light.png',['SEARCH_DISCARD_HERO']],
+            [1, 'Deck', 'Hero', 'Guardian', 'Hero-Guardian/Holy_Curselifter.png',['TAKE_SELF_CURSE']],
+            [1, 'Deck', 'Hero', 'Guardian', 'Hero-Guardian/Iron_Resolve.png',['MOD_CANNOT_CHALLENGED_ENDTURN']],
+            [1, 'Deck', 'Hero', 'Guardian', 'Hero-Guardian/Mighty_Blade.png',['MOD_CANNOT_DESTROYED_HERO_ENDTURN']],
+            [1, 'Deck', 'Hero', 'Guardian', 'Hero-Guardian/Radiant_Horn.png',['SEARCH_DISCARD_MODIFIER']],
+            [1, 'Deck', 'Hero', 'Guardian', 'Hero-Guardian/Vibrant_Glow.png',['MOD_ALL_ROLL_P5_ENDTURN']],
+            [1, 'Deck', 'Hero', 'Guardian', 'Hero-Guardian/Wise_Shield.png',['MOD_ALL_ROLL_P3_ENDTURN']],
+            
+            [1, 'Deck', 'Hero', 'Ranger', 'Hero-Ranger/Bullseye.png',['LOOK_3_DECK_PICK1_PUTBACK2_ANYORDER']],
+            [1, 'Deck', 'Hero', 'Ranger', 'Hero-Ranger/Hook.png',['PLAY_ITEM^DRAW']],
+            [1, 'Deck', 'Hero', 'Ranger', 'Hero-Ranger/Lookie_Rookie.png',['SEARCH_DISCARD_ITEM']],
+            [1, 'Deck', 'Hero', 'Ranger', 'Hero-Ranger/Quick_Draw.png',['DRAW_TO_LIST^DRAW_TO_LIST^IF_ITEM_IN_LIST^MAY_PLAY_FROM_LIST']],
+            [1, 'Deck', 'Hero', 'Ranger', 'Hero-Ranger/Serious_Grey.png',['DRAW^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY']],
+            [1, 'Deck', 'Hero', 'Ranger', 'Hero-Ranger/Sharp_Fox.png',['CHOOSE_OTHER_PLAYER^REVEAL_HAND']],
+            [1, 'Deck', 'Hero', 'Ranger', 'Hero-Ranger/Wildshot.png',['DRAW^DRAW^DRAW^DISCARD']],
+            [1, 'Deck', 'Hero', 'Ranger', 'Hero-Ranger/Wily_Red.png',['DRAW_TILL_7']],
+            
+            [1, 'Deck', 'Hero', 'Thief', 'Hero-Thief/Kit_Napper.png',['CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^STEAL']],
+            [1, 'Deck', 'Hero', 'Thief', 'Hero-Thief/Meowzio.png',['CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^STEAL^PULL_HAND']],
+            [1, 'Deck', 'Hero', 'Thief', 'Hero-Thief/Plundering_Puma.png',['CHOOSE_OTHER_PLAYER^PULL_HAND^PULL_HAND^PLAYER_MAY_DRAW']],
+            [1, 'Deck', 'Hero', 'Thief', 'Hero-Thief/Shurikitty.png',['CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^TAKE_THIS_ITEM^DESTROY']],
+            [1, 'Deck', 'Hero', 'Thief', 'Hero-Thief/Silent_Shadow.png',['CHOOSE_OTHER_PLAYER^REVEAL_HAND^PULL']],
+            [1, 'Deck', 'Hero', 'Thief', 'Hero-Thief/Slippery_Paws.png',['CHOOSE_OTHER_PLAYER^PULL_HAND_LIST^CHOOSE_FROM_LIST']],
+            [1, 'Deck', 'Hero', 'Thief', 'Hero-Thief/Sly_Pickings.png',['CHOOSE_OTHER_PLAYER^PULL_HAND^IF_ITEM^MAY_PLAY_THIS']],
+            [1, 'Deck', 'Hero', 'Thief', 'Hero-Thief/Smooth_Mimimeow.png',['THIEF_OTHERS_PULL']],
+            
+            [1, 'Deck', 'Hero', 'Wizard', 'Hero-Wizard/Bun_Bun.png',['SEARCH_DISCARD_MAGIC']],
+            [1, 'Deck', 'Hero', 'Wizard', 'Hero-Wizard/Buttons.png',['CHOOSE_OTHER_PLAYER^PULL_HAND^IF_MAGIC^MAY_PLAY_THIS']],
+            [1, 'Deck', 'Hero', 'Wizard', 'Hero-Wizard/Fluffy.png',['CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY']],
+            [1, 'Deck', 'Hero', 'Wizard', 'Hero-Wizard/Hopper.png',['CHOOSE_OTHER_PLAYER^PLAYER_SACRIFICE_HERO']],
+            [1, 'Deck', 'Hero', 'Wizard', 'Hero-Wizard/Snowball.png',['DRAW^IF_MAGIC^MAY_PLAY_THIS^DRAW']],
+            [1, 'Deck', 'Hero', 'Wizard', 'Hero-Wizard/Spooky.png',['OTHERS_SACRIFICE_HERO']],
+            [1, 'Deck', 'Hero', 'Wizard', 'Hero-Wizard/Whiskers.png',['CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^STEAL^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY']],
+            [1, 'Deck', 'Hero', 'Wizard', 'Hero-Wizard/Wiggles.png',['CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^STEAL^ROLL_THIS_EFFECT']],
+            
+            [1, 'Deck', 'Items', 'None', 'Items/Bard_Mask.png',['MOD_HERO_TYPE_BARD']],
+            [1, 'Deck', 'Items', 'None', 'Items/Decoy_Doll.png',['MOD_SACRIFICED_DESTROYED_DISCARD_THIS']],
+            [1, 'Deck', 'Items', 'None', 'Items/Fighter_Mask.png',['MOD_HERO_TYPE_FIGHTER']],
+            [1, 'Deck', 'Items', 'None', 'Items/Guardian_Mask.png',['MOD_HERO_TYPE_GUARDIAN']],
+            [2, 'Deck', 'Items', 'None', 'Items/Particularly_Rusty_Coin.png',['MOD_HERO_ROLL_UNSUCCESS_DRAW']],
+            [1, 'Deck', 'Items', 'None', 'Items/Ranger_Mask.png',['MOD_HERO_TYPE_RANGE']],
+            [2, 'Deck', 'Items', 'None', 'Items/Really_Big_Ring.png',['MOD_HERO_ROLL_TRY_P2']],
+            [1, 'Deck', 'Items', 'None', 'Items/Thief_Mask.png',['MOD_HERO_TYPE_THIEF']],
+            [1, 'Deck', 'Items', 'None', 'Items/Wizard_Mask.png',['MOD_HERO_TYPE_WIZARD']],
+            
+            [1, 'Deck', 'Magic', 'None', 'Magic/Call_to_the_Fallen.png',['SEARCH_DISCARD_HERO']],
+            [2, 'Deck', 'Magic', 'None', 'Magic/Critical_Boost.png',['DRAW^DRAW^DRAW^DISCARD']],
+            [2, 'Deck', 'Magic', 'None', 'Magic/Destructive_Spell.png',['DISCARD^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^DESTROY']],
+            [2, 'Deck', 'Magic', 'None', 'Magic/Enchanted_Spell.png',['MOD_ALL_ROLL_P2_ENDTURN']],
+            [2, 'Deck', 'Magic', 'None', 'Magic/Entangling_Trap.png',['DISCARD^DISCARD^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^STEAL']],
+            [1, 'Deck', 'Magic', 'None', 'Magic/Forced_Exchange.png',['CHOOSE_SELF_PARTY_HERO^CHOOSE_OTHER_PLAYER^CHOOSE_PLAYER_PARTY_HERO^TRADE_HERO']],
+            [1, 'Deck', 'Magic', 'None', 'Magic/Forceful_Winds.png',['CHOOSE_PLAYER^ALL_PARTY_ITEMS_TO_HAND']],
+            [2, 'Deck', 'Magic', 'None', 'Magic/Winds_of_Change.png',['CHOOSE_PLAYER^1_PARTY_ITEM_TO_HAND^PLAYER_DRAW']],
+            
+            [4, 'Deck', 'Modifiers', 'None', 'Modifiers/Modifier_0i4.png',[]],
+            [3, 'Deck', 'Modifiers', 'None', 'Modifiers/Modifier_1i3.png',[]],
+            [9, 'Deck', 'Modifiers', 'None', 'Modifiers/Modifier_2i2.png',[]],
+            [4, 'Deck', 'Modifiers', 'None', 'Modifiers/Modifier_3i1.png',[]],
+            [4, 'Deck', 'Modifiers', 'None', 'Modifiers/Modifier_4i0.png',[]],
+            
+            [1, 'Monster', 'Monster', 'None', 'Monster/Abyss_Queen.png',['HH','+8 SLAY','-5 SCRIFICE a hero', 'If modified by another player +1 to roll']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Anuran_Cauldron.png',['HHH','+7 SLAY','-6 SCRIFICE a hero', '+1 to rolls']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Artic_Aries.png',['H','+10 SLAY','-6 SCRIFICE a hero', 'If hero affect success then DRAW']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Bloodwing.png',['HH', '+9 SLAY', '-6 SCRIFICE a hero', 'If CHALLENGED then player DISCARDS']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Corrupted_Sabretooth.png',['HHH', '+9 SLAY and DRAW', '-6 SCRIFICE a hero', 'If you DESTROY a hero then could STEAL Hero']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Crowned_Serpent.png',['HH', '+10 SLAY', '-7 SCRIFICE a hero', 'After every modifier ever then DRAW']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Dark_Dragon_King.png',['BH', '+8 SLAY', '-4 DISCARD 2 card', '+1 to Hero roll']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Dracos.png',['H', '+8 SCRIFICE a hero', '-5 SLAY', 'If your hero is DESTROYED then DRAW']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Malamammoth.png',['RH', '+8 SLAY', '-4 DISCARD 2 card', 'If DRAW item then may play it']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Mega_Slime.png',['HHHH', '+8 SLAY and DRAW 2', '-7 SCRIFICE a hero', '+1 Action point']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Orthus.png',['WH', '+8 SLAY', '-4 DISCARD 2 card', 'If DRAW magic then may play it']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Rex_Major.png',['GH', '+8 SLAY', '-4 DISCARD 2 card', 'If DRAW modifier then may (reveal and DRAW)']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Terratuga.png',['H', '+11 SLAY', '-7 SACRIFICE a Hero', 'Heros can not be DESTROYED']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Titan_Wyvern.png',['FH', '+8 SLAY', '-4 DISCARD 2 card', '+1 to Challenge rolls']],
+            [1, 'Monster', 'Monster', 'None', 'Monster/Warworn_Owlbear.png',['TH', '+8 SLAY', '-4 DISCARD 2 card', 'Items cannot be challenged']],
+            
+            [14, 'Deck', 'Challenge', 'None', 'Other/Challenge.png',[]],
+            [1, 'Rule_Card', 'Rule_Card', 'None', 'Other/Rule_Card.png',[]],
+            [1, 'Rule_Card', 'Rule_Card_Back', 'None', 'Other/Rule_Card_Back.png',[]],
+            
+            [1, 'Party_Leader', 'Party_Leader', 'Bard', 'Party_Leader/The_Charismatic_Song.png',['+1 Hero Roll']],
+            [1, 'Party_Leader', 'Party_Leader', 'Wizard', 'Party_Leader/The_Cloaked_Sage.png',['If play Magic then DRAW']],
+            [1, 'Party_Leader', 'Party_Leader', 'Ranger', 'Party_Leader/The_Divine_Arrow.png',['+1 ATTACK Monster']],
+            [1, 'Party_Leader', 'Party_Leader', 'Fighter', 'Party_Leader/The_Fist_of_Reason.png',['+2 Challenging or +2 Challenged']],
+            [1, 'Party_Leader', 'Party_Leader', 'Guardian', 'Party_Leader/The_Protecting_Horn.png',['+1 Modifying or -1 Modifying']],
+            [1, 'Party_Leader', 'Party_Leader', 'Thief', 'Party_Leader/The_Shadow_Claw.png',['Once per turn may pull card for 1 action point']]
+            ]
+
+        var game_cards_dict = {}
+        var cardID = 0;
+        function create_game_cards_dict(){
+        game_cards_dict = {}
+        game_cards.forEach(card => {
+            card_name = card[4].split('/')[card[4].split('/').length-1].split('.')[0]
+            game_cards_dict[card_name] = {
+            'name': card_name,
+            'count': card[0],
+            'deck': card[1],
+            'type': card[2],
+            'class': card[3],
+            'src': card[4],
+            'mods': card[5],
+            'item': null
+            }
+        });
+        }
         let gameConstants={
             cardImages: [
                 'images\\Card_Back.png',
