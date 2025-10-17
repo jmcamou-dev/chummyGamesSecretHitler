@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChummyGames</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
+</head>
+<body>
+    <script> 
+        const GameViewTitles = {
+            main: 'main',
+            changeName: 'changeName',
+            waitRoom: 'waitRoom',
+            mainGameView: 'mainGameView'
+        }
+        const GameViews = {
+            changeName:(setThisView = true)=>{
+                let thisView = GameViewTitles.changeName;
+                if(setThisView || currentView == thisView){
+                    clearBody();
+                    setCurrentView(thisView);
+                    let myPlayerData = getPlayerDataByPCID(myPCID);
+
+                    let myDiv = document.createElement("div");
+                    myDiv.innerHTML = `<p>Change Name:<br>From:<br>${myPlayerData.name}</p>`;
+                    myDiv.innerHTML += `<p>To:<br>`;
+                    document.body.appendChild(myDiv)
+
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'text';
+                    nameInput.placeholder = 'Enter your name';
+                    nameInput.id = 'login-nameInput';
+                    document.body.appendChild(nameInput);
+
+                    let myDiv1 = document.createElement("div");
+                    myDiv1.innerHTML = `<br>`;
+                    document.body.appendChild(myDiv1)
+
+                    // Enter Name button
+                    const buttonEnterName = document.createElement('button');
+                    buttonEnterName.textContent = 'Enter Name';
+                    buttonEnterName.addEventListener('click',
+                        () => {
+                            const nameInput = document.getElementById('login-nameInput');
+                            newName = nameInput.value.trim();
+                            if (newName){
+                                myName = newName;
+                                sendMessage('newName', {name: newName});
+                            }
+                        })
+                    document.body.appendChild(buttonEnterName);
+
+                    let myDiv2 = document.createElement("div");
+                    myDiv2.innerHTML = `<br>`;
+                    document.body.appendChild(myDiv2)
+
+                    // back button
+                    const backButton = document.createElement('button');
+                    backButton.textContent = 'Go Back';
+                    backButton.addEventListener('click',
+                        () => {
+                            GameViews.main(true);
+                        })
+                    document.body.appendChild(backButton);
+                }
+            },
+            main: (setThisView = true)=>{
+                let thisView = GameViewTitles.main;
+                
+                if(setThisView || currentView == thisView){
+                    clearBody();
+                    setCurrentView(thisView);
+                }
+                
+                if(!ChummyGamesData.gameStarted){
+                    GameViews.waitRoom(setThisView);
+                }
+                else{
+                    GameViews.mainGameView(setThisView);
+                }      
+            },
+            waitRoom:(setThisView = true)=>{
+                let thisView = GameViewTitles.waitRoom;
+                
+                if(setThisView || currentView == thisView){
+                    clearBody();
+                    setCurrentView(thisView);
+                    let myPlayerData = getPlayerDataByPCID(myPCID);
+
+                    let myDiv = document.createElement("div");
+                    myDiv.innerHTML = `<p>Your are: ${myPlayerData.name}</p>`;
+                    myDiv.addEventListener('click', ()=>{ GameViews.changeName(true); })
+                    document.body.appendChild(myDiv)
+
+                    let playersDiv = document.createElement("div");
+                    ChummyGamesData.players.forEach(p => {
+                        let joinedText = p.joinedGame ? '<span style="color: blue;">Joined</span>' :'<span style="color: red;">Not Joined</span>';
+                        playersDiv.innerHTML += `<p>${p.name}: ${joinedText}</p>`;
+                    })
+                    document.body.appendChild(playersDiv)
+
+                    const bt = document.createElement('button');
+                    bt.textContent = "Join Game"
+                    bt.addEventListener('click', ()=>{ sendMessage('joinGame'); })
+                    document.body.appendChild(bt)
+
+                    let myDiv1 = document.createElement("div");
+                    myDiv1.innerHTML = `<br>`;
+                    document.body.appendChild(myDiv1)
+
+                    const bt2 = document.createElement('button');
+                    bt2.textContent = "Leave Game"
+                    bt2.addEventListener('click', ()=>{ sendMessage('leaveGame'); })
+                    document.body.appendChild(bt2)
+
+                    let myDiv2 = document.createElement("div");
+                    myDiv2.innerHTML = `<br><br>`;
+                    document.body.appendChild(myDiv2)
+
+                    const startGameButton = document.createElement('button');
+                    startGameButton.textContent = "Start Game"
+                    startGameButton.addEventListener('click', ()=>{ sendMessage('startGame'); })
+                    document.body.appendChild(startGameButton)
+                }
+            },
+            mainGameView: (setThisView = true)=>{
+                let thisView = GameViewTitles.mainGameView;
+                
+                if(setThisView || currentView == thisView){
+                    clearBody();
+                    setCurrentView(thisView);
+                    let myPlayerData = getPlayerDataByPCID(myPCID);
+
+                    let myDiv = document.createElement("div");
+                    myDiv.innerHTML = `<p>Your are: ${myPlayerData.name}</p>`;
+                    myDiv.addEventListener('click', ()=>{ GameViews.changeName(true); })
+                    document.body.appendChild(myDiv)
+
+                    let playersDiv = document.createElement("div");
+                    playersDiv.innerHTML = `Turn: ${ChummyGamesData.players.find(p => p.turn).name}`;
+                    ChummyGamesData.players.forEach(p => {
+                        playersDiv.innerHTML += `<p>${p.name}: ${p.code}</p>`;
+                    })
+                    document.body.appendChild(playersDiv)
+                }
+            }
+        }
+    </script>
+
+
+    <script> // MESSAGES
+        function setUpNewGameData(){
+            let pcIDList = []
+            ChummyGamesData.players.forEach(p => {pcIDList.push(p.pcID)})
+            shuffleArray(pcIDList)
+            ChummyGamesData.players.forEach(p => {
+                p['code'] = getCode(10);
+                p['turn'] = false;
+                if(p.pcID == pcIDList[0])
+                    p['turn'] = true;
+            })
+        }
+        // messageData ~ type | isHost | pcID | ChummyGamesData | elements
+        function handleHostToPlayerMessage(messageData){
+            if(messageData.type == 'gameHasStarted'){
+                GameViews.main(true);
+            }
+            if(messageData.type == 'EnterChummyGame'){
+                if(myPCID == messageData.elements.toPCID){
+                    GameViews.main(true);
+                }
+                GameViews.main(false);
+            }
+            if(myPCID == messageData.elements.toPCID && messageData.type == 'nameInUse'){
+                GameViews.changeName(true);
+                alert('Name already taken!');
+            }
+            if( messageData.type == 'gameAlreadyStarted'){
+                if(myPCID == messageData.elements.toPCID){
+                    GameViews.main(true);
+                    alert('Game Has Already Started!');
+                }
+                GameViews.main(false);
+            }
+            if( messageData.type == 'joinTheGame'){
+                if(myPCID == messageData.elements.toPCID){
+                    GameViews.main(true);
+                }
+                GameViews.main(false);
+            }
+            if(myPCID == messageData.elements.toPCID && messageData.type == 'nameChanged'){
+                GameViews.main(true);
+            }
+        }
+        function handlePlayerToHostMessage(messageData){
+            if(messageData.type === 'startGame') {
+                if(ChummyGamesData.gameStarted){
+                    sendMessage('gameAlreadyStarted', {'toPCID': messageData.pcID});
+                }
+                else{
+                    if(ChummyGamesData.players.find(p=>p.joinedGame)){
+                        ChummyGamesData.gameStarted = true
+                        setUpNewGameData();
+                        sendMessage('gameHasStarted');
+                    }
+                }
+            }
+            if(messageData.type === 'joinGame') {
+                if(ChummyGamesData.gameStarted){
+                    sendMessage('gameAlreadyStarted', {'toPCID': messageData.pcID});
+                }
+                else{
+                    ChummyGamesData.players.find(p => p.pcID === messageData.pcID).joinedGame = true;
+                    sendMessage('joinTheGame', {'toPCID': messageData.pcID});
+                }
+            }
+            if(messageData.type === 'leaveGame') {
+                if(ChummyGamesData.gameStarted){
+                    sendMessage('gameAlreadyStarted', {'toPCID': messageData.pcID});
+                }
+                else{
+                    ChummyGamesData.players.find(p => p.pcID === messageData.pcID).joinedGame = false;
+                    sendMessage('joinTheGame', {'toPCID': messageData.pcID});
+                }
+            }
+            if(messageData.type === 'newName') {
+                let newName = messageData.elements.name;
+                // Check if another connection with the same NAME
+                if(ChummyGamesData.players.some(p => p.name == newName && p.connStatus == CONNECTION_STATES.CONNECTED)){
+                    sendMessage('nameInUse', {'toPCID': messageData.pcID, 'name': newName});
+                }
+                else{
+                    ChummyGamesData.players.find(p => p.pcID === messageData.pcID).name = newName;
+                    sendMessage('nameChanged', {'toPCID': messageData.pcID});
+                }
+            }
+        }
+    </script>
+    <script> // Functions
+        function getPlayerDataByPCID(pcID){
+            return ChummyGamesData.players.find(p => p.pcID === pcID)
+        }
+        function shuffleArray(lst) {
+            for (let i = lst.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [lst[i], lst[j]] = [lst[j], lst[i]];
+            }
+            for (let i = lst.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [lst[i], lst[j]] = [lst[j], lst[i]];
+            }
+            return lst
+        }
+        function clearBody() {
+            const children = Array.from(document.body.children);
+            children.forEach(child => {
+                document.body.removeChild(child);
+            });
+        }
+        function getCode(codeSize){
+            return Array.from({ length: codeSize }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]).join('');
+        }    
+        function sendMessage(type, elements={}) {
+            console.log(`SEND MESSAGE: ${type}`,elements);
+            // Add message metadata
+            messageData = {}
+            messageData.type = type;
+            messageData.isHost = isHost;
+            messageData.pcID = myPCID;
+            if(isHost){messageData.ChummyGamesData = ChummyGamesData;}
+            else{messageData.ChummyGamesData = {};}
+            messageData.elements = elements;
+            // Send message data
+            myconnections.forEach(c => {if(c.conn.open){c.conn.send(messageData);}});
+        }
+        function receiveMessage(messageData){
+            console.log(`RECEIVED MESSAGE: ${messageData.world}: ${messageData.type}`,messageData);
+            // Host to Player 
+            if (!isHost && messageData.isHost){
+                ChummyGamesData = messageData.ChummyGamesData;
+                // Handle message
+                handleHostToPlayerMessage(messageData);
+            }
+            else if (isHost && !messageData.isHost){
+                // Handle message
+                handlePlayerToHostMessage(messageData);
+            }
+        }
+    </script>
+
+    <script> // Chummy Games's Constants
+        const CONNECTION_STATES = {
+            DISCONNECTED: 'disconnected',
+            CONNECTED: 'connected'
+        };
+    </script>
+    <script> // PC Data
+        //---------------------------------
+        const MY_PEER_CODE = 'ChummyGames_Slay';
+        let mypeer;
+        let myconnections = [];
+        let isHost = null;
+        let myPCID = null;
+        //---------------------------------
+        let currentView = null
+        let ChummyGamesData = {gameStarted: false, players:[]}
+    </script>
+
+    <script> // Handle New Connection
+        function handleNewPCID(connection){
+            myconnections.push({conn: connection});
+            ChummyGamesData.players.push({pcID: connection.metadata.pcID, name: `Player ${ChummyGamesData.players.length+1}`, joinedGame: false, connStatus: CONNECTION_STATES.CONNECTED})
+        }
+        function handleNewConnection(connection){
+            // Check if another connection for the same PCID
+            let foundPCID = false;
+            myconnections.forEach(c => {
+                if(c.conn.metadata.pcID == connection.metadata.pcID){
+                    foundPCID = true;
+                    c.conn.close();
+                    c.conn = connection;
+                    c.connStatus= CONNECTION_STATES.CONNECTED;
+                }
+            });
+            if(!foundPCID){
+                handleNewPCID(connection);
+            }
+            sendMessage('EnterChummyGame', {'toPCID': connection.metadata.pcID});
+        }
+        function handleHost() {
+            mypeer = new Peer(MY_PEER_CODE);
+            // True Host
+            mypeer.on('open', (id) => {
+                console.log("Host-Open: With ID - "+id);
+                isHost = true;
+            }); 
+            // Triggered if a player is connecting 
+            mypeer.on('connection', function (connection) {
+                console.log("Host-Connection: With PCID - "+connection.metadata.pcID+": With PEER - "+connection.peer);
+                // Triggered when player is fully connected
+                connection.on('open', (messageData) => {console.log("Host-Connection-open");handleNewConnection(connection);}); 
+                // Triggered if a player is trying to send a message
+                connection.on('data', (messageData) => {receiveMessage(messageData);}); 
+                // Triggered if player connection failed
+                connection.on('close', () => {
+                    console.log("Host-Connection-Close");
+                    myconnections.forEach(c => {
+                        if(c.conn.metadata.pcID == connection.metadata.pcID){
+                            c.connStatus = CONNECTION_STATES.DISCONNECTED;
+                        }
+                    });
+                });
+            });
+            // Triggered if there is already a host or something new happend
+            mypeer.on('error', (err) => {console.log("Host-Error");});
+        }
+        function handleJoin() {
+            isHost = false;
+            mypeer = new Peer();
+            // My random connection is created
+            mypeer.on('open', (id) => { 
+                console.log("Join-Open: With ID - "+id);
+                const connection = mypeer.connect(MY_PEER_CODE, { metadata: { pcID: myPCID }});
+                myconnections.push({conn:connection});
+                 // Successfully connected with host
+                connection.on('open', () => {console.log("Join-Open-Open: With PEER - "+connection.peer);});
+                // Message from player or host
+                connection.on('data', (messageData) => {receiveMessage(messageData);}); 
+                // Host connection failed or my connection failed
+                connection.on('close', () => {console.log("Join-Open-Close")}); 
+                // Error while connected to host
+                connection.on('error', (err) => {console.log("Join-Open-Error")}); 
+            });
+            // Error before connecting to host
+            mypeer.on('error', (err) => {console.log("Join-Error")});
+        }
+    </script>
+    <script> // Handle Local Storage
+        function setCurrentView(newView){
+            currentView = newView;
+            localStorage.setItem('ChummyGames-currentView', currentView);
+        }
+        function handleLocalStorage(){
+            // Player PCID
+            if (localStorage.getItem('ChummyGames-PC-ID') !== null) {
+                let OLDmyPCID = localStorage.getItem('ChummyGames-PC-ID')
+                if(OLDmyPCID.length != 12 ){
+                    localStorage.setItem('ChummyGames-PC-ID', myPCID);
+                    console.log(`NEW PC ID: ${myPCID}`);
+                }
+                else{
+                    myPCID = OLDmyPCID;
+                    console.log(`Old PC ID: ${myPCID}`);
+                }
+            }
+            else{
+                myPCID = getCode(12);
+                localStorage.setItem('ChummyGames-PC-ID', myPCID);
+                console.log(`NEW PC ID: ${myPCID}`);
+            }
+            // Player currentView
+            if (localStorage.getItem('ChummyGames-currentView') !== null) {
+                currentView = localStorage.getItem('ChummyGames-currentView')
+                console.log(`Old currentView: ${currentView}`);
+            }
+        }
+    </script>
+    <script> //bootup
+        function bootup(){
+
+            handleLocalStorage();
+
+            if (window.location.hash === '#host' || window.location.pathname.endsWith('/host')) {
+                console.log("URL indicates HOST mode");
+                handleHost();
+            }
+            else {
+                console.log("URL indicates JOIN mode");
+                handleJoin();
+            }
+        }
+        bootup()
+    </script>
+</body>
+</html>

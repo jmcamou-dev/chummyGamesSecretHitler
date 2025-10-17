@@ -7,43 +7,491 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
 </head>
 <body>
+    <script> // Game Constants and Setup
+        let gameConstants={
+            cardImages: [
+                'images\\Card_Back.png',
+                'images\\logo.png',
+                'images\\logo_no_back.png',
+                'images\\Monster_Card_Back.png',
+                'images\\Special_Card_Back.png',
+                'images\\Cursed_Items\\Curse_of_the_Snake\'s_Eyes.png',
+                'images\\Cursed_Items\\Sealing_Key.png',
+                'images\\Cursed_Items\\Suspiciously_Shiny_Coin.png',
+                'images\\Hero-Bard\\Dodgy_Dealer.png',
+                'images\\Hero-Bard\\Fuzzy_Cheeks.png',
+                'images\\Hero-Bard\\Greedy_Cheeks.png',
+                'images\\Hero-Bard\\Lucky_Bucky.png',
+                'images\\Hero-Bard\\Mellow_Dee.png',
+                'images\\Hero-Bard\\Napping_Nibbles.png',
+                'images\\Hero-Bard\\Peanut.png',
+                'images\\Hero-Bard\\Tipsy_Tootie.png',
+                'images\\Hero-Fighter\\Bad_Axe.png',
+                'images\\Hero-Fighter\\Beary_Wise.png',
+                'images\\Hero-Fighter\\Bear_Claw.png',
+                'images\\Hero-Fighter\\Fury_Knuckle.png',
+                'images\\Hero-Fighter\\Heavy_Bear.png',
+                'images\\Hero-Fighter\\Pan_Chucks.png',
+                'images\\Hero-Fighter\\Qi_Bear.png',
+                'images\\Hero-Fighter\\Tough_Teddy.png',
+                'images\\Hero-Guardian\\Calming_Voice.png',
+                'images\\Hero-Guardian\\Guiding_Light.png',
+                'images\\Hero-Guardian\\Holy_Curselifter.png',
+                'images\\Hero-Guardian\\Iron_Resolve.png',
+                'images\\Hero-Guardian\\Mighty_Blade.png',
+                'images\\Hero-Guardian\\Radiant_Horn.png',
+                'images\\Hero-Guardian\\Vibrant_Glow.png',
+                'images\\Hero-Guardian\\Wise_Shield.png',
+                'images\\Hero-Ranger\\Bullseye.png',
+                'images\\Hero-Ranger\\Hook.png',
+                'images\\Hero-Ranger\\Lookie_Rookie.png',
+                'images\\Hero-Ranger\\Quick_Draw.png',
+                'images\\Hero-Ranger\\Serious_Grey.png',
+                'images\\Hero-Ranger\\Sharp_Fox.png',
+                'images\\Hero-Ranger\\Wildshot.png',
+                'images\\Hero-Ranger\\Wily_Red.png',
+                'images\\Hero-Thief\\Kit_Napper.png',
+                'images\\Hero-Thief\\Meowzio.png',
+                'images\\Hero-Thief\\Plundering_Puma.png',
+                'images\\Hero-Thief\\Shurikitty.png',
+                'images\\Hero-Thief\\Silent_Shadow.png',
+                'images\\Hero-Thief\\Slippery_Paws.png',
+                'images\\Hero-Thief\\Sly_Pickings.png',
+                'images\\Hero-Thief\\Smooth_Mimimeow.png',
+                'images\\Hero-Wizard\\Bun_Bun.png',
+                'images\\Hero-Wizard\\Buttons.png',
+                'images\\Hero-Wizard\\Fluffy.png',
+                'images\\Hero-Wizard\\Hopper.png',
+                'images\\Hero-Wizard\\Snowball.png',
+                'images\\Hero-Wizard\\Spooky.png',
+                'images\\Hero-Wizard\\Whiskers.png',
+                'images\\Hero-Wizard\\Wiggles.png',
+                'images\\Items\\Bard_Mask.png',
+                'images\\Items\\Decoy_Doll.png',
+                'images\\Items\\Fighter_Mask.png',
+                'images\\Items\\Guardian_Mask.png',
+                'images\\Items\\Particularly_Rusty_Coin.png',
+                'images\\Items\\Ranger_Mask.png',
+                'images\\Items\\Really_Big_Ring.png',
+                'images\\Items\\Thief_Mask.png',
+                'images\\Items\\Wizard_Mask.png',
+                'images\\Magic\\Call_to_the_Fallen.png',
+                'images\\Magic\\Critical_Boost.png',
+                'images\\Magic\\Destructive_Spell.png',
+                'images\\Magic\\Enchanted_Spell.png',
+                'images\\Magic\\Entangling_Trap.png',
+                'images\\Magic\\Forced_Exchange.png',
+                'images\\Magic\\Forceful_Winds.png',
+                'images\\Magic\\Winds_of_Change.png',
+                'images\\main_cards\\card_1.png',
+                'images\\main_cards\\card_2.png',
+                'images\\main_cards\\card_3.png',
+                'images\\main_cards\\card_4.png',
+                'images\\main_cards\\card_5.png',
+                'images\\main_cards\\default.png',
+                'images\\main_cards\\Forced_Exchange.png',
+                'images\\main_cards\\Forceful_Winds.png',
+                'images\\Modifiers\\Modifier_0i4.png',
+                'images\\Modifiers\\Modifier_1i3.png',
+                'images\\Modifiers\\Modifier_2i2.png',
+                'images\\Modifiers\\Modifier_3i1.png',
+                'images\\Modifiers\\Modifier_4i0.png',
+                'images\\Monster\\Abyss_Queen.png',
+                'images\\Monster\\Anuran_Cauldron.png',
+                'images\\Monster\\Artic_Aries.png',
+                'images\\Monster\\Bloodwing.png',
+                'images\\Monster\\Corrupted_Sabretooth.png',
+                'images\\Monster\\Crowned_Serpent.png',
+                'images\\Monster\\Dark_Dragon_King.png',
+                'images\\Monster\\Dracos.png',
+                'images\\Monster\\Malamammoth.png',
+                'images\\Monster\\Mega_Slime.png',
+                'images\\Monster\\Orthus.png',
+                'images\\Monster\\Rex_Major.png',
+                'images\\Monster\\Terratuga.png',
+                'images\\Monster\\Titan_Wyvern.png',
+                'images\\Monster\\Warworn_Owlbear.png',
+                'images\\Other\\Challenge.png',
+                'images\\Other\\Rule_Card.png',
+                'images\\Other\\Rule_Card_Back.png',
+                'images\\Party_Leader\\The_Charismatic_Song.png',
+                'images\\Party_Leader\\The_Cloaked_Sage.png',
+                'images\\Party_Leader\\The_Divine_Arrow.png',
+                'images\\Party_Leader\\The_Fist_of_Reason.png',
+                'images\\Party_Leader\\The_Protecting_Horn.png',
+                'images\\Party_Leader\\The_Shadow_Claw.png',
+                'images\\special_cards\\default.png',
+                'images\\special_cards\\special_1.png',
+                'images\\special_cards\\special_2.png',
+                'images\\special_cards\\special_3.png',
+                'images\\special_cards\\special_4.png',
+                'images\\special_cards\\special_5.png'
+            ],
+            cards: [
+                {deck: 'none', card: 'Card_Back', img: 'images\\Card_Back.png'},
+                {deck: 'none', card: 'logo', img: 'images\\logo.png'},
+                {deck: 'none', card: 'logo_no_back', img: 'images\\logo_no_back.png'},
+                {deck: 'none', card: 'Monster_Card_Back', img: 'images\\Monster_Card_Back.png'},
+                {deck: 'none', card: 'Special_Card_Back', img: 'images\\Special_Card_Back.png'},
+                {deck: 'Cursed_Items', card: 'Curse_of_the_Snake\'s_Eyes', img: 'images\\Cursed_Items\\Curse_of_the_Snake\'s_Eyes.png'},
+                {deck: 'Cursed_Items', card: 'Sealing_Key', img: 'images\\Cursed_Items\\Sealing_Key.png'},
+                {deck: 'Cursed_Items', card: 'Suspiciously_Shiny_Coin', img: 'images\\Cursed_Items\\Suspiciously_Shiny_Coin.png'},
+                {deck: 'Hero-Bard', card: 'Dodgy_Dealer', img: 'images\\Hero-Bard\\Dodgy_Dealer.png'},
+                {deck: 'Hero-Bard', card: 'Fuzzy_Cheeks', img: 'images\\Hero-Bard\\Fuzzy_Cheeks.png'},
+                {deck: 'Hero-Bard', card: 'Greedy_Cheeks', img: 'images\\Hero-Bard\\Greedy_Cheeks.png'},
+                {deck: 'Hero-Bard', card: 'Lucky_Bucky', img: 'images\\Hero-Bard\\Lucky_Bucky.png'},
+                {deck: 'Hero-Bard', card: 'Mellow_Dee', img: 'images\\Hero-Bard\\Mellow_Dee.png'},
+                {deck: 'Hero-Bard', card: 'Napping_Nibbles', img: 'images\\Hero-Bard\\Napping_Nibbles.png'},
+                {deck: 'Hero-Bard', card: 'Peanut', img: 'images\\Hero-Bard\\Peanut.png'},
+                {deck: 'Hero-Bard', card: 'Tipsy_Tootie', img: 'images\\Hero-Bard\\Tipsy_Tootie.png'},
+                {deck: 'Hero-Fighter', card: 'Bad_Axe', img: 'images\\Hero-Fighter\\Bad_Axe.png'},
+                {deck: 'Hero-Fighter', card: 'Beary_Wise', img: 'images\\Hero-Fighter\\Beary_Wise.png'},
+                {deck: 'Hero-Fighter', card: 'Bear_Claw', img: 'images\\Hero-Fighter\\Bear_Claw.png'},
+                {deck: 'Hero-Fighter', card: 'Fury_Knuckle', img: 'images\\Hero-Fighter\\Fury_Knuckle.png'},
+                {deck: 'Hero-Fighter', card: 'Heavy_Bear', img: 'images\\Hero-Fighter\\Heavy_Bear.png'},
+                {deck: 'Hero-Fighter', card: 'Pan_Chucks', img: 'images\\Hero-Fighter\\Pan_Chucks.png'},
+                {deck: 'Hero-Fighter', card: 'Qi_Bear', img: 'images\\Hero-Fighter\\Qi_Bear.png'},
+                {deck: 'Hero-Fighter', card: 'Tough_Teddy', img: 'images\\Hero-Fighter\\Tough_Teddy.png'},
+                {deck: 'Hero-Guardian', card: 'Calming_Voice', img: 'images\\Hero-Guardian\\Calming_Voice.png'},
+                {deck: 'Hero-Guardian', card: 'Guiding_Light', img: 'images\\Hero-Guardian\\Guiding_Light.png'},
+                {deck: 'Hero-Guardian', card: 'Holy_Curselifter', img: 'images\\Hero-Guardian\\Holy_Curselifter.png'},
+                {deck: 'Hero-Guardian', card: 'Iron_Resolve', img: 'images\\Hero-Guardian\\Iron_Resolve.png'},
+                {deck: 'Hero-Guardian', card: 'Mighty_Blade', img: 'images\\Hero-Guardian\\Mighty_Blade.png'},
+                {deck: 'Hero-Guardian', card: 'Radiant_Horn', img: 'images\\Hero-Guardian\\Radiant_Horn.png'},
+                {deck: 'Hero-Guardian', card: 'Vibrant_Glow', img: 'images\\Hero-Guardian\\Vibrant_Glow.png'},
+                {deck: 'Hero-Guardian', card: 'Wise_Shield', img: 'images\\Hero-Guardian\\Wise_Shield.png'},
+                {deck: 'Hero-Ranger', card: 'Bullseye', img: 'images\\Hero-Ranger\\Bullseye.png'},
+                {deck: 'Hero-Ranger', card: 'Hook', img: 'images\\Hero-Ranger\\Hook.png'},
+                {deck: 'Hero-Ranger', card: 'Lookie_Rookie', img: 'images\\Hero-Ranger\\Lookie_Rookie.png'},
+                {deck: 'Hero-Ranger', card: 'Quick_Draw', img: 'images\\Hero-Ranger\\Quick_Draw.png'},
+                {deck: 'Hero-Ranger', card: 'Serious_Grey', img: 'images\\Hero-Ranger\\Serious_Grey.png'},
+                {deck: 'Hero-Ranger', card: 'Sharp_Fox', img: 'images\\Hero-Ranger\\Sharp_Fox.png'},
+                {deck: 'Hero-Ranger', card: 'Wildshot', img: 'images\\Hero-Ranger\\Wildshot.png'},
+                {deck: 'Hero-Ranger', card: 'Wily_Red', img: 'images\\Hero-Ranger\\Wily_Red.png'},
+                {deck: 'Hero-Thief', card: 'Kit_Napper', img: 'images\\Hero-Thief\\Kit_Napper.png'},
+                {deck: 'Hero-Thief', card: 'Meowzio', img: 'images\\Hero-Thief\\Meowzio.png'},
+                {deck: 'Hero-Thief', card: 'Plundering_Puma', img: 'images\\Hero-Thief\\Plundering_Puma.png'},
+                {deck: 'Hero-Thief', card: 'Shurikitty', img: 'images\\Hero-Thief\\Shurikitty.png'},
+                {deck: 'Hero-Thief', card: 'Silent_Shadow', img: 'images\\Hero-Thief\\Silent_Shadow.png'},
+                {deck: 'Hero-Thief', card: 'Slippery_Paws', img: 'images\\Hero-Thief\\Slippery_Paws.png'},
+                {deck: 'Hero-Thief', card: 'Sly_Pickings', img: 'images\\Hero-Thief\\Sly_Pickings.png'},
+                {deck: 'Hero-Thief', card: 'Smooth_Mimimeow', img: 'images\\Hero-Thief\\Smooth_Mimimeow.png'},
+                {deck: 'Hero-Wizard', card: 'Bun_Bun', img: 'images\\Hero-Wizard\\Bun_Bun.png'},
+                {deck: 'Hero-Wizard', card: 'Buttons', img: 'images\\Hero-Wizard\\Buttons.png'},
+                {deck: 'Hero-Wizard', card: 'Fluffy', img: 'images\\Hero-Wizard\\Fluffy.png'},
+                {deck: 'Hero-Wizard', card: 'Hopper', img: 'images\\Hero-Wizard\\Hopper.png'},
+                {deck: 'Hero-Wizard', card: 'Snowball', img: 'images\\Hero-Wizard\\Snowball.png'},
+                {deck: 'Hero-Wizard', card: 'Spooky', img: 'images\\Hero-Wizard\\Spooky.png'},
+                {deck: 'Hero-Wizard', card: 'Whiskers', img: 'images\\Hero-Wizard\\Whiskers.png'},
+                {deck: 'Hero-Wizard', card: 'Wiggles', img: 'images\\Hero-Wizard\\Wiggles.png'},
+                {deck: 'Items', card: 'Bard_Mask', img: 'images\\Items\\Bard_Mask.png'},
+                {deck: 'Items', card: 'Decoy_Doll', img: 'images\\Items\\Decoy_Doll.png'},
+                {deck: 'Items', card: 'Fighter_Mask', img: 'images\\Items\\Fighter_Mask.png'},
+                {deck: 'Items', card: 'Guardian_Mask', img: 'images\\Items\\Guardian_Mask.png'},
+                {deck: 'Items', card: 'Particularly_Rusty_Coin', img: 'images\\Items\\Particularly_Rusty_Coin.png'},
+                {deck: 'Items', card: 'Ranger_Mask', img: 'images\\Items\\Ranger_Mask.png'},
+                {deck: 'Items', card: 'Really_Big_Ring', img: 'images\\Items\\Really_Big_Ring.png'},
+                {deck: 'Items', card: 'Thief_Mask', img: 'images\\Items\\Thief_Mask.png'},
+                {deck: 'Items', card: 'Wizard_Mask', img: 'images\\Items\\Wizard_Mask.png'},
+                {deck: 'Magic', card: 'Call_to_the_Fallen', img: 'images\\Magic\\Call_to_the_Fallen.png'},
+                {deck: 'Magic', card: 'Critical_Boost', img: 'images\\Magic\\Critical_Boost.png'},
+                {deck: 'Magic', card: 'Destructive_Spell', img: 'images\\Magic\\Destructive_Spell.png'},
+                {deck: 'Magic', card: 'Enchanted_Spell', img: 'images\\Magic\\Enchanted_Spell.png'},
+                {deck: 'Magic', card: 'Entangling_Trap', img: 'images\\Magic\\Entangling_Trap.png'},
+                {deck: 'Magic', card: 'Forced_Exchange', img: 'images\\Magic\\Forced_Exchange.png'},
+                {deck: 'Magic', card: 'Forceful_Winds', img: 'images\\Magic\\Forceful_Winds.png'},
+                {deck: 'Magic', card: 'Winds_of_Change', img: 'images\\Magic\\Winds_of_Change.png'},
+                {deck: 'Modifiers', card: 'Modifier_0i4', img: 'images\\Modifiers\\Modifier_0i4.png'},
+                {deck: 'Modifiers', card: 'Modifier_1i3', img: 'images\\Modifiers\\Modifier_1i3.png'},
+                {deck: 'Modifiers', card: 'Modifier_2i2', img: 'images\\Modifiers\\Modifier_2i2.png'},
+                {deck: 'Modifiers', card: 'Modifier_3i1', img: 'images\\Modifiers\\Modifier_3i1.png'},
+                {deck: 'Modifiers', card: 'Modifier_4i0', img: 'images\\Modifiers\\Modifier_4i0.png'},
+                {deck: 'Monster', card: 'Abyss_Queen', img: 'images\\Monster\\Abyss_Queen.png'},
+                {deck: 'Monster', card: 'Anuran_Cauldron', img: 'images\\Monster\\Anuran_Cauldron.png'},
+                {deck: 'Monster', card: 'Artic_Aries', img: 'images\\Monster\\Artic_Aries.png'},
+                {deck: 'Monster', card: 'Bloodwing', img: 'images\\Monster\\Bloodwing.png'},
+                {deck: 'Monster', card: 'Corrupted_Sabretooth', img: 'images\\Monster\\Corrupted_Sabretooth.png'},
+                {deck: 'Monster', card: 'Crowned_Serpent', img: 'images\\Monster\\Crowned_Serpent.png'},
+                {deck: 'Monster', card: 'Dark_Dragon_King', img: 'images\\Monster\\Dark_Dragon_King.png'},
+                {deck: 'Monster', card: 'Dracos', img: 'images\\Monster\\Dracos.png'},
+                {deck: 'Monster', card: 'Malamammoth', img: 'images\\Monster\\Malamammoth.png'},
+                {deck: 'Monster', card: 'Mega_Slime', img: 'images\\Monster\\Mega_Slime.png'},
+                {deck: 'Monster', card: 'Orthus', img: 'images\\Monster\\Orthus.png'},
+                {deck: 'Monster', card: 'Rex_Major', img: 'images\\Monster\\Rex_Major.png'},
+                {deck: 'Monster', card: 'Terratuga', img: 'images\\Monster\\Terratuga.png'},
+                {deck: 'Monster', card: 'Titan_Wyvern', img: 'images\\Monster\\Titan_Wyvern.png'},
+                {deck: 'Monster', card: 'Warworn_Owlbear', img: 'images\\Monster\\Warworn_Owlbear.png'},
+                {deck: 'Other', card: 'Challenge', img: 'images\\Other\\Challenge.png'},
+                {deck: 'Other', card: 'Rule_Card', img: 'images\\Other\\Rule_Card.png'},
+                {deck: 'Other', card: 'Rule_Card_Back', img: 'images\\Other\\Rule_Card_Back.png'},
+                {deck: 'Party_Leader', card: 'The_Charismatic_Song', img: 'images\\Party_Leader\\The_Charismatic_Song.png'},
+                {deck: 'Party_Leader', card: 'The_Cloaked_Sage', img: 'images\\Party_Leader\\The_Cloaked_Sage.png'},
+                {deck: 'Party_Leader', card: 'The_Divine_Arrow', img: 'images\\Party_Leader\\The_Divine_Arrow.png'},
+                {deck: 'Party_Leader', card: 'The_Fist_of_Reason', img: 'images\\Party_Leader\\The_Fist_of_Reason.png'},
+                {deck: 'Party_Leader', card: 'The_Protecting_Horn', img: 'images\\Party_Leader\\The_Protecting_Horn.png'},
+                {deck: 'Party_Leader', card: 'The_Shadow_Claw', img: 'images\\Party_Leader\\The_Shadow_Claw.png'},
+                
+                {deck: 'main_cards', card: 'Forced_Exchange', img: 'images\\main_cards\\Forced_Exchange.png'},
+                {deck: 'main_cards', card: 'Forceful_Winds', img: 'images\\main_cards\\Forceful_Winds.png'},
+                {deck: 'main_cards', card: 'card_1', img: 'images\\main_cards\\card_1.png'},
+                {deck: 'main_cards', card: 'card_2', img: 'images\\main_cards\\card_2.png'},
+                {deck: 'main_cards', card: 'card_3', img: 'images\\main_cards\\card_3.png'},
+                {deck: 'main_cards', card: 'card_4', img: 'images\\main_cards\\card_4.png'},
+                {deck: 'main_cards', card: 'card_5', img: 'images\\main_cards\\card_5.png'},
+                {deck: 'main_cards', card: 'default', img: 'images\\main_cards\\default.png'},
+                {deck: 'special_cards', card: 'default', img: 'images\\special_cards\\default.png'},
+                {deck: 'special_cards', card: 'special_1', img: 'images\\special_cards\\special_1.png'},
+                {deck: 'special_cards', card: 'special_2', img: 'images\\special_cards\\special_2.png'},
+                {deck: 'special_cards', card: 'special_3', img: 'images\\special_cards\\special_3.png'},
+                {deck: 'special_cards', card: 'special_4', img: 'images\\special_cards\\special_4.png'},
+                {deck: 'special_cards', card: 'special_5', img: 'images\\special_cards\\special_5.png'}
+            ]
+        }
+    </script>
     <script> 
         const GameViewTitles = {
-            main: 'main'
+            main: 'main',
+            changeName: 'changeName',
+            waitRoom: 'waitRoom',
+            mainGameView: 'mainGameView'
         }
         const GameViews = {
-            main: (setThisView = true)=>{
-                if(setThisView || currentView == GameViewTitles.main){
+            changeName:(setThisView = true)=>{
+                let thisView = GameViewTitles.changeName;
+                if(setThisView || currentView == thisView){
                     clearBody();
-                    setCurrentView(GameViewTitles.main);
+                    setCurrentView(thisView);
+                    let myPlayerData = getPlayerDataByPCID(myPCID);
 
                     let myDiv = document.createElement("div");
-                    myDiv.innerHTML = `<p>${myPCID}</p>`;
-                    document.body.appendChild(myDiv)   
+                    myDiv.innerHTML = `<p>Change Name:<br>From:<br>${myPlayerData.name}</p>`;
+                    myDiv.innerHTML += `<p>To:<br>`;
+                    document.body.appendChild(myDiv)
+
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'text';
+                    nameInput.placeholder = 'Enter your name';
+                    nameInput.id = 'login-nameInput';
+                    document.body.appendChild(nameInput);
+
+                    let myDiv1 = document.createElement("div");
+                    myDiv1.innerHTML = `<br>`;
+                    document.body.appendChild(myDiv1)
+
+                    // Enter Name button
+                    const buttonEnterName = document.createElement('button');
+                    buttonEnterName.textContent = 'Enter Name';
+                    buttonEnterName.addEventListener('click',
+                        () => {
+                            const nameInput = document.getElementById('login-nameInput');
+                            newName = nameInput.value.trim();
+                            if (newName){
+                                myName = newName;
+                                sendMessage('newName', {name: newName});
+                            }
+                        })
+                    document.body.appendChild(buttonEnterName);
+
+                    let myDiv2 = document.createElement("div");
+                    myDiv2.innerHTML = `<br>`;
+                    document.body.appendChild(myDiv2)
+
+                    // back button
+                    const backButton = document.createElement('button');
+                    backButton.textContent = 'Go Back';
+                    backButton.addEventListener('click',
+                        () => {
+                            GameViews.main(true);
+                        })
+                    document.body.appendChild(backButton);
+                }
+            },
+            main: (setThisView = true)=>{
+                let thisView = GameViewTitles.main;
+                
+                if(setThisView || currentView == thisView){
+                    clearBody();
+                    setCurrentView(thisView);
+                }
+                
+                if(!ChummyGamesData.gameStarted){
+                    GameViews.waitRoom(setThisView);
+                }
+                else{
+                    GameViews.mainGameView(setThisView);
+                }      
+            },
+            waitRoom:(setThisView = true)=>{
+                let thisView = GameViewTitles.waitRoom;
+                
+                if(setThisView || currentView == thisView){
+                    clearBody();
+                    setCurrentView(thisView);
+                    let myPlayerData = getPlayerDataByPCID(myPCID);
+
+                    let myDiv = document.createElement("div");
+                    myDiv.innerHTML = `<p>Your are: ${myPlayerData.name}</p>`;
+                    myDiv.addEventListener('click', ()=>{ GameViews.changeName(true); })
+                    document.body.appendChild(myDiv)
+
+                    let playersDiv = document.createElement("div");
+                    ChummyGamesData.players.forEach(p => {
+                        let joinedText = p.joinedGame ? '<span style="color: blue;">Joined</span>' :'<span style="color: red;">Not Joined</span>';
+                        playersDiv.innerHTML += `<p>${p.name}: ${joinedText}</p>`;
+                    })
+                    document.body.appendChild(playersDiv)
 
                     const bt = document.createElement('button');
-                    bt.textContent = "Host"
+                    bt.textContent = "Join Game"
+                    bt.addEventListener('click', ()=>{ sendMessage('joinGame'); })
                     document.body.appendChild(bt)
-                }           
+
+                    let myDiv1 = document.createElement("div");
+                    myDiv1.innerHTML = `<br>`;
+                    document.body.appendChild(myDiv1)
+
+                    const bt2 = document.createElement('button');
+                    bt2.textContent = "Leave Game"
+                    bt2.addEventListener('click', ()=>{ sendMessage('leaveGame'); })
+                    document.body.appendChild(bt2)
+
+                    let myDiv2 = document.createElement("div");
+                    myDiv2.innerHTML = `<br><br>`;
+                    document.body.appendChild(myDiv2)
+
+                    const startGameButton = document.createElement('button');
+                    startGameButton.textContent = "Start Game"
+                    startGameButton.addEventListener('click', ()=>{ sendMessage('startGame'); })
+                    document.body.appendChild(startGameButton)
+                }
+            },
+            mainGameView: (setThisView = true)=>{
+                let thisView = GameViewTitles.mainGameView;
+                
+                if(setThisView || currentView == thisView){
+                    clearBody();
+                    setCurrentView(thisView);
+                    let myPlayerData = getPlayerDataByPCID(myPCID);
+
+                    let myDiv = document.createElement("div");
+                    myDiv.innerHTML = `<p>Your are: ${myPlayerData.name}</p>`;
+                    myDiv.addEventListener('click', ()=>{ GameViews.changeName(true); })
+                    document.body.appendChild(myDiv)
+
+                    let playersDiv = document.createElement("div");
+                    playersDiv.innerHTML = `Turn: ${ChummyGamesData.players.find(p => p.turn).name}`;
+                    ChummyGamesData.players.forEach(p => {
+                        playersDiv.innerHTML += `<p>${p.name}: ${p.code}</p>`;
+                    })
+                    document.body.appendChild(playersDiv)
+
+                    let cardImage = document.createElement("img")
+                    cardImage.src  = gameConstants.cardImages[0]
+                    document.body.appendChild(cardImage)
+                    cardImage = document.createElement("img")
+                    cardImage.src  = gameConstants.cardImages[1]
+                    document.body.appendChild(cardImage)
+                    cardImage = document.createElement("img")
+                    cardImage.src  = gameConstants.cardImages[5]
+                    document.body.appendChild(cardImage)
+                }
             }
         }
     </script>
 
 
     <script> // MESSAGES
+        function setUpNewGameData(){
+            let pcIDList = []
+            ChummyGamesData.players.forEach(p => {pcIDList.push(p.pcID)})
+            shuffleArray(pcIDList)
+            ChummyGamesData.players.forEach(p => {
+                p['code'] = getCode(10);
+                p['turn'] = false;
+                if(p.pcID == pcIDList[0])
+                    p['turn'] = true;
+            })
+        }
         // messageData ~ type | isHost | pcID | ChummyGamesData | elements
         function handleHostToPlayerMessage(messageData){
-            if(messageData,type == 'EnterChummyGame'){
+            if(messageData.type == 'gameHasStarted'){
+                GameViews.main(true);
+            }
+            if(messageData.type == 'EnterChummyGame'){
                 if(myPCID == messageData.elements.toPCID){
-                    setCurrentView(GameViewTitles.main)
+                    GameViews.main(true);
                 }
                 GameViews.main(false);
             }
+            if(myPCID == messageData.elements.toPCID && messageData.type == 'nameInUse'){
+                GameViews.changeName(true);
+                alert('Name already taken!');
+            }
+            if( messageData.type == 'gameAlreadyStarted'){
+                if(myPCID == messageData.elements.toPCID){
+                    GameViews.main(true);
+                    alert('Game Has Already Started!');
+                }
+                GameViews.main(false);
+            }
+            if( messageData.type == 'joinTheGame'){
+                if(myPCID == messageData.elements.toPCID){
+                    GameViews.main(true);
+                }
+                GameViews.main(false);
+            }
+            if(myPCID == messageData.elements.toPCID && messageData.type == 'nameChanged'){
+                GameViews.main(true);
+            }
         }
         function handlePlayerToHostMessage(messageData){
+            if(messageData.type === 'startGame') {
+                if(ChummyGamesData.gameStarted){
+                    sendMessage('gameAlreadyStarted', {'toPCID': messageData.pcID});
+                }
+                else{
+                    if(ChummyGamesData.players.find(p=>p.joinedGame)){
+                        ChummyGamesData.gameStarted = true
+                        setUpNewGameData();
+                        sendMessage('gameHasStarted');
+                    }
+                }
+            }
+            if(messageData.type === 'joinGame') {
+                if(ChummyGamesData.gameStarted){
+                    sendMessage('gameAlreadyStarted', {'toPCID': messageData.pcID});
+                }
+                else{
+                    ChummyGamesData.players.find(p => p.pcID === messageData.pcID).joinedGame = true;
+                    sendMessage('joinTheGame', {'toPCID': messageData.pcID});
+                }
+            }
+            if(messageData.type === 'leaveGame') {
+                if(ChummyGamesData.gameStarted){
+                    sendMessage('gameAlreadyStarted', {'toPCID': messageData.pcID});
+                }
+                else{
+                    ChummyGamesData.players.find(p => p.pcID === messageData.pcID).joinedGame = false;
+                    sendMessage('joinTheGame', {'toPCID': messageData.pcID});
+                }
+            }
+            if(messageData.type === 'newName') {
+                let newName = messageData.elements.name;
+                // Check if another connection with the same NAME
+                if(ChummyGamesData.players.some(p => p.name == newName && p.connStatus == CONNECTION_STATES.CONNECTED)){
+                    sendMessage('nameInUse', {'toPCID': messageData.pcID, 'name': newName});
+                }
+                else{
+                    ChummyGamesData.players.find(p => p.pcID === messageData.pcID).name = newName;
+                    sendMessage('nameChanged', {'toPCID': messageData.pcID});
+                }
+            }
         }
     </script>
     <script> // Functions
+        function getPlayerDataByPCID(pcID){
+            return ChummyGamesData.players.find(p => p.pcID === pcID)
+        }
         function shuffleArray(lst) {
             for (let i = lst.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -100,17 +548,21 @@
     </script>
     <script> // PC Data
         //---------------------------------
-        const MY_PEER_CODE = 'ChummyGames';
+        const MY_PEER_CODE = 'ChummyGames_Slay';
         let mypeer;
         let myconnections = [];
         let isHost = null;
         let myPCID = null;
         //---------------------------------
         let currentView = null
-        let ChummyGamesData = {}
+        let ChummyGamesData = {gameStarted: false, players:[]}
     </script>
 
     <script> // Handle New Connection
+        function handleNewPCID(connection){
+            myconnections.push({conn: connection});
+            ChummyGamesData.players.push({pcID: connection.metadata.pcID, name: `Player ${ChummyGamesData.players.length+1}`, joinedGame: false, connStatus: CONNECTION_STATES.CONNECTED})
+        }
         function handleNewConnection(connection){
             // Check if another connection for the same PCID
             let foundPCID = false;
@@ -123,7 +575,7 @@
                 }
             });
             if(!foundPCID){
-                myconnections.push({conn: connection, connStatus: CONNECTION_STATES.CONNECTED});
+                handleNewPCID(connection);
             }
             sendMessage('EnterChummyGame', {'toPCID': connection.metadata.pcID});
         }
@@ -137,7 +589,6 @@
             // Triggered if a player is connecting 
             mypeer.on('connection', function (connection) {
                 console.log("Host-Connection: With PCID - "+connection.metadata.pcID+": With PEER - "+connection.peer);
-                createView_Login();
                 // Triggered when player is fully connected
                 connection.on('open', (messageData) => {console.log("Host-Connection-open");handleNewConnection(connection);}); 
                 // Triggered if a player is trying to send a message
